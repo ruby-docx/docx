@@ -5,7 +5,7 @@ module Docx
     attr_reader :paragraphs
     
     def initialize(path)
-      Parser.new(path) do |p|
+      Parser.new(File.expand_path(path)) do |p|
         @paragraphs = p.paragraphs
       end
     end
