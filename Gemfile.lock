@@ -2,9 +2,11 @@ GEM
   remote: https://rubygems.org/
   specs:
     nokogiri (1.5.2)
+    rubyzip (0.9.7)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   nokogiri
+  rubyzip

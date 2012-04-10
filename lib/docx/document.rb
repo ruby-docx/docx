@@ -1,9 +1,13 @@
+require 'docx/parser'
+
 module Docx
   class Document
     attr_reader :paragraphs
     
     def initialize(path)
-      @paragraphs = []
+      Parser.new(path) do |p|
+        @paragraphs = p.paragraphs
+      end
     end
     
     def self.open(path)
