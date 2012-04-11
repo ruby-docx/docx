@@ -17,5 +17,9 @@ module Docx
     def each_paragraph
       @paragraphs.each { |p| yield(p) }
     end
+    
+    def to_s
+      @paragraphs.map(&:to_s).join("\n")
+    end
   end
 end

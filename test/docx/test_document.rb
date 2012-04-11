@@ -7,10 +7,10 @@ class DocxTest < Test::Unit::TestCase
   end
   
   def test_basic_functionality
-    assert_equal ['hello', 'world'], @doc.paragraphs
+    assert_equal "hello\nworld", @doc.to_s
   end
   
   def test_each_paragraph
-    @doc.each_paragraph { |p| assert ['hello', 'world'].include?(p) }
+    @doc.each_paragraph { |p| assert p.kind_of?(Docx::Containers::Paragraph) }
   end
 end
