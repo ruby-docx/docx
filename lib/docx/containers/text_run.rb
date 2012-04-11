@@ -18,6 +18,18 @@ module Docx
       def to_s
         @text
       end
+      
+      def italicized?
+        @formatting[:italic]
+      end
+      
+      def bolded?
+        @formatting[:bold]
+      end
+      
+      def underlined?
+        @formatting[:underline]
+      end
     end
   end
 end

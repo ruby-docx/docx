@@ -27,26 +27,50 @@ class FormattingTest < Test::Unit::TestCase
   end
   
   def test_normal_formatting
-    assert_equal default_formatting, @formatting[0][0]
-    assert_equal default_formatting, @formatting[4][0]
+    [0, 4].each do |i|
+      assert_equal default_formatting, @formatting[i][0]
+      refute @doc.paragraphs[i].text_runs[0].italicized?
+      refute @doc.paragraphs[i].text_runs[0].bolded?
+      refute @doc.paragraphs[i].text_runs[0].underlined?
+    end
   end
   
   def test_italic_formatting
     assert_equal only_italic, @formatting[1][0]
+    assert @doc.paragraphs[1].text_runs[0].italicized?
+    refute @doc.paragraphs[1].text_runs[0].bolded?
+    refute @doc.paragraphs[1].text_runs[0].underlined?
   end
   
   def test_bold_formatting
     assert_equal only_bold, @formatting[2][0]
+    refute @doc.paragraphs[2].text_runs[0].italicized?
+    assert @doc.paragraphs[2].text_runs[0].bolded?
+    refute @doc.paragraphs[2].text_runs[0].underlined?
   end
   
   def test_underline_formatting
     assert_equal only_underline, @formatting[3][0]
+    refute @doc.paragraphs[3].text_runs[0].italicized?
+    refute @doc.paragraphs[3].text_runs[0].bolded?
+    assert @doc.paragraphs[3].text_runs[0].underlined?
   end
   
   def test_mixed_formatting
-    assert_equal default_formatting,     @formatting[5][0]
+    assert_equal default_formatting, @formatting[5][0]
+    refute @doc.paragraphs[5].text_runs[0].italicized?
+    refute @doc.paragraphs[5].text_runs[0].bolded?
+    refute @doc.paragraphs[5].text_runs[0].underlined?
+    
     assert_equal all_formatting_options, @formatting[5][1]
-    assert_equal default_formatting,     @formatting[5][2]
+    assert @doc.paragraphs[5].text_runs[1].italicized?
+    assert @doc.paragraphs[5].text_runs[1].bolded?
+    assert @doc.paragraphs[5].text_runs[1].underlined?
+    
+    assert_equal default_formatting, @formatting[5][2]
+    refute @doc.paragraphs[5].text_runs[2].italicized?
+    refute @doc.paragraphs[5].text_runs[2].bolded?
+    refute @doc.paragraphs[5].text_runs[2].underlined?
   end
   
   private

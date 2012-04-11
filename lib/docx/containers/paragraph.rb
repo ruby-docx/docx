@@ -13,6 +13,10 @@ module Docx
         @text_runs.map(&:text).join('')
       end
       
+      def each_text_run
+        @text_runs.each { |tr| yield(tr) }
+      end
+      
       alias_method :text, :to_s
     end
   end

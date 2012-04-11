@@ -1,12 +1,32 @@
-# Docx
+# docx
 
-## TODO
+a ruby library/gem for interacting with `.docx` files
 
-### Basic Functionality
+## usage
 
-    require 'docx'
-    
-    d = Docx::Document.open('test.docx')
-    d.each_paragraph do |p|
-      puts d
-    end
+### basic
+
+``` ruby
+require 'docx'
+
+d = Docx::Document.open('example.docx')
+d.each_paragraph do |p|
+  puts d
+end
+```
+
+### advanced
+
+``` ruby
+require 'docx'
+
+d = Docx::Document.open('example.docx')
+d.each_paragraph do |p|
+  p.each_text_run do |run|
+    run.italicized?
+    run.bolded?
+    run.underlined?
+    run.formatting
+    run.text
+  end
+end
