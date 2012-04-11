@@ -26,8 +26,24 @@ module Docx
     
     def parse_runs_from(p_node)
       p_node.xpath('w:r').map do |r_node|
-        Containers::TextRun.new(text: r_node.xpath('w:t').map(&:text).join(''))
+        rpr_node = r_node.xpath('w:rPr')
+        Containers::TextRun.new({
+          text:       parse_text_from(r_node),
+          formatting: parse_formatting_from(rpr_node)
+        })
       end
+    end
+    
+    def parse_text_from(r_node)
+      r_node.xpath('w:t').map(&:text).join('')
+    end
+    
+    def parse_formatting_from(rpr_node)
+      {
+        italic:    !rpr_node.xpath('w:i').empty?,
+        bold:      !rpr_node.xpath('w:b').empty?,
+        underline: !rpr_node.xpath('w:u').empty?
+      }
     end
   end
 end

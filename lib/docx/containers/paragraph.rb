@@ -12,6 +12,8 @@ module Docx
       def to_s
         @text_runs.map(&:text).join('')
       end
+      
+      alias_method :text, :to_s
     end
   end
 end

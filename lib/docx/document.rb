@@ -21,5 +21,7 @@ module Docx
     def to_s
       @paragraphs.map(&:to_s).join("\n")
     end
+    
+    alias_method :text, :to_s
   end
 end
