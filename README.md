@@ -4,6 +4,12 @@ a ruby library/gem for interacting with `.docx` files
 
 ## usage
 
+### install
+
+requires ruby (only tested with 1.9.3 so far)
+
+`gem install docx`
+
 ### basic
 
 ``` ruby
