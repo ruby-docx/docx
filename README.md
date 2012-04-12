@@ -8,7 +8,7 @@ a ruby library/gem for interacting with `.docx` files
 
 requires ruby (only tested with 1.9.3 so far)
 
-`gem install docx`
+    gem install docx
 
 ### basic
 
