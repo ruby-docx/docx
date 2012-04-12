@@ -1,3 +1,10 @@
+PATH
+  remote: .
+  specs:
+    docx (0.1.0)
+      nokogiri (~> 1.5)
+      rubyzip (~> 0.9)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -8,5 +15,4 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  nokogiri
-  rubyzip
+  docx!
