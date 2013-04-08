@@ -20,7 +20,7 @@ class DocxTest < Test::Unit::TestCase
   
   def test_each_paragraph
     @doc.each_paragraph do |p|
-      assert_kind_of Docx::Containers::Paragraph, p
+      assert_kind_of Docx::Elements::Containers::Paragraph, p
       assert p.text_runs.all? { |r| r.formatting == default_formatting }
     end
   end
@@ -28,7 +28,7 @@ class DocxTest < Test::Unit::TestCase
   def test_each_text_run
     @doc.each_paragraph do |p|
       p.each_text_run do |tr|
-        assert_kind_of Docx::Containers::TextRun, tr
+        assert_kind_of Docx::Elements::Containers::TextRun, tr
       end
     end
   end
@@ -36,6 +36,6 @@ class DocxTest < Test::Unit::TestCase
   private
   
   def default_formatting
-    Docx::Containers::TextRun::DEFAULT_FORMATTING
+    Docx::Elements::Containers::TextRun::DEFAULT_FORMATTING
   end
 end

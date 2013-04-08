@@ -1,16 +1,19 @@
+require 'docx/elements'
+
 module Docx
-  module Containers
-    module Container
-      def properties
-        @node.at_xpath("./#{@properties_tag}")
-      end
+  module Elements
+    module Containers
+      module Container
+        include Elements::Element
+        # Relation methods
+        # TODO: Create a properties object, include Element
+        def properties
+          @node.at_xpath("./#{@properties_tag}")
+        end
 
-      def parent(type = '*')
-        @node.at_xpath("./parent::#{type}")
-      end
-
-      def copy
-        @node.dup
+        def blank!
+          @node.xpath(".//w:t").each {|t| t.content = '' }
+        end
       end
     end
   end

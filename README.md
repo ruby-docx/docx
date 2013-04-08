@@ -36,3 +36,7 @@ d.each_paragraph do |p|
     run.text
   end
 end
+
+### todo
+
+Need to reconcile the need to work with the elements on a lower level with the more abstract interface being used for containers and elements

@@ -5,10 +5,11 @@ require 'zip/zip'
 
 module Docx
   class Parser
-    attr_reader :xml
+    attr_reader :xml, :doc, :zip
     def initialize(path)
       @zip = Zip::ZipFile.open(path)
-      @xml = Nokogiri::XML(@zip.read('word/document.xml'))
+      @xml = @zip.read('word/document.xml')
+      @doc = Nokogiri::XML(@xml)
       if block_given?
         yield self
         @zip.close
@@ -16,17 +17,17 @@ module Docx
     end
     
     def paragraphs
-      @xml.xpath('//w:document//w:body//w:p').map { |p_node| parse_paragraph_from p_node }
+      @doc.xpath('//w:document//w:body//w:p').map { |p_node| parse_paragraph_from p_node }
     end
 
     def bookmarks
-      @xml.xpath('//w:bookmarkStart').map { |b_node| parse_bookmark_from b_node }
+      @doc.xpath('//w:bookmarkStart').map { |b_node| parse_bookmark_from b_node }
     end
     
     private
     
     def parse_paragraph_from(p_node)
-      Containers::Paragraph.new(p_node)
+      Elements::Containers::Paragraph.new(p_node)
     end
 
     def parse_bookmark_from(b_node)
