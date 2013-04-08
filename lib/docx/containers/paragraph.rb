@@ -19,9 +19,9 @@ module Docx
 
         # Handle direct text insertion into paragraph on some conditions
         def text=(content)
-          if @text_runs.size == 1
+          if text_runs.size == 1
             @text_runs.first.text = content
-          elsif @text_runs.size == 0
+          elsif text_runs.size == 0
             new_r = TextRun.create_within(self)
             new_r.text = content
           else
