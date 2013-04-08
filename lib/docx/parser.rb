@@ -1,4 +1,5 @@
 require 'docx/containers'
+require 'docx/elements'
 require 'nokogiri'
 require 'zip/zip'
 
@@ -17,33 +18,21 @@ module Docx
     def paragraphs
       @xml.xpath('//w:document//w:body//w:p').map { |p_node| parse_paragraph_from p_node }
     end
+
+    def bookmarks
+      bookmarks = @xml.xpath('//w:bookmarkStart').map { |b_node| parse_bookmark_from b_node }
+      puts bookmarks.inspect
+      bookmarks
+    end
     
     private
     
     def parse_paragraph_from(p_node)
-      Containers::Paragraph.new(parse_runs_from(p_node))
+      Containers::Paragraph.new(p_node)
     end
-    
-    def parse_runs_from(p_node)
-      p_node.xpath('w:r').map do |r_node|
-        rpr_node = r_node.xpath('w:rPr')
-        Containers::TextRun.new({
-          text:       parse_text_from(r_node),
-          formatting: parse_formatting_from(rpr_node)
-        })
-      end
-    end
-    
-    def parse_text_from(r_node)
-      r_node.xpath('w:t').map(&:text).join('')
-    end
-    
-    def parse_formatting_from(rpr_node)
-      {
-        italic:    !rpr_node.xpath('w:i').empty?,
-        bold:      !rpr_node.xpath('w:b').empty?,
-        underline: !rpr_node.xpath('w:u').empty?
-      }
+
+    def parse_bookmark_from(b_node)
+      Elements::Bookmark.new(b_node)
     end
   end
 end

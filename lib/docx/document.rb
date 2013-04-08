@@ -2,16 +2,22 @@ require 'docx/parser'
 
 module Docx
   class Document
-    attr_reader :paragraphs
-    
-    def initialize(path)
-      Parser.new(File.expand_path(path)) do |p|
-        @paragraphs = p.paragraphs
+    delegate :paragraphs, :bookmarks, :to => :@parser
+
+    def initialize(path, &block)
+      if block_given?
+        @parser = Parser.new(File.expand_path(path), &block)
+      else
+        @parser = Parser.new(File.expand_path(path))
       end
     end
+
+    def paragraphs
+      @parser.paragraphs
+    end
     
-    def self.open(path)
-      self.new(path)
+    def self.open(path, &block)
+      self.new(path, &block)
     end
     
     def each_paragraph

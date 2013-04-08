@@ -12,6 +12,11 @@ class DocxTest < Test::Unit::TestCase
     assert_equal 'world', @doc.paragraphs.last.text
     assert_equal "hello\nworld", @doc.text
   end
+
+  def test_bookmarks
+    assert_equal 1, @doc.bookmarks.size
+    assert_equal 'test_bookmark', @doc.bookmarks.first.name
+  end
   
   def test_each_paragraph
     @doc.each_paragraph do |p|
@@ -27,7 +32,7 @@ class DocxTest < Test::Unit::TestCase
       end
     end
   end
-  
+
   private
   
   def default_formatting
