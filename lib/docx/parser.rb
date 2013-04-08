@@ -5,10 +5,10 @@ require 'zip/zip'
 
 module Docx
   class Parser
+    attr_reader :xml
     def initialize(path)
       @zip = Zip::ZipFile.open(path)
-      @xml = Nokogiri::XML(@zip.find_entry('word/document.xml').get_input_stream)
-      
+      @xml = Nokogiri::XML(@zip.read('word/document.xml'))
       if block_given?
         yield self
         @zip.close

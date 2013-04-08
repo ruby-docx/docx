@@ -14,7 +14,7 @@ class DocxTest < Test::Unit::TestCase
   end
 
   def test_bookmarks
-    assert_equal 1, @doc.bookmarks.size
+    assert_equal 2, @doc.bookmarks.size
     assert_equal 'test_bookmark', @doc.bookmarks.first.name
   end
   
