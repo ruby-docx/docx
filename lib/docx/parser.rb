@@ -20,9 +20,7 @@ module Docx
     end
 
     def bookmarks
-      bookmarks = @xml.xpath('//w:bookmarkStart').map { |b_node| parse_bookmark_from b_node }
-      puts bookmarks.inspect
-      bookmarks
+      @xml.xpath('//w:bookmarkStart').map { |b_node| parse_bookmark_from b_node }
     end
     
     private
