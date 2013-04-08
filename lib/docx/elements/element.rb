@@ -1,6 +1,12 @@
+require 'nokogiri'
+
 module Docx
   module Elements
     module Element
+      def self.included(base)
+        base.extend(ClassMethods)
+      end
+
       attr_accessor :node
       delegate :at_xpath, :xpath, :to => :@node
 
@@ -35,10 +41,20 @@ module Docx
       end
 
       # Creation/edit methods
-      # TODO: Need to figure out whether to return a copied node or an instance of the class. I'm thinking an instance of the class
-
       def copy
         self.class.new(@node.dup)
+      end
+
+      module ClassMethods
+        def create_with(element)
+          # Need to somehow get the xml document accessible here by default, but this is alright in the interim
+          self.new(Nokogiri::XML::Node.new("w:#{TAG}"), element.node)
+        end
+
+        def create_within(element)
+          new_element = create_with(element)
+          new_element.append_to(element)
+        end
       end
     end
   end

@@ -11,6 +11,8 @@ module Docx
           underline: false
         }
         
+        TAG = 'r'
+
         attr_reader :text
         attr_reader :formatting
         
@@ -19,6 +21,11 @@ module Docx
           @properties_tag = 'rPr'
           @text       = parse_text || ''
           @formatting = parse_formatting || DEFAULT_FORMATTING
+        end
+
+        def text=(content)
+          @node.content = content
+          self
         end
 
         def parse_text
