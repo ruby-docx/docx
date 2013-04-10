@@ -30,7 +30,7 @@ module Docx
         # Remove text from paragraph
         paragraph.blank!
         paragraphs << paragraph
-        for i in 0..(text_array.size - 1)
+        for i in 0...(text_array.size - 1)
           # Copy previous paragraph
           new_p = paragraphs[i].copy
           # Insert as sibling of previous paragraph
@@ -48,7 +48,7 @@ module Docx
         # at_xpath returns the first match found and preceding-sibling returns siblings in the 
         # order they appear in the document not the order as they appear when moving out from
         # the starting node
-        if (r_nodes = @node.xpath("./preceding-sibling::w:r"))
+        if not (r_nodes = @node.xpath("./preceding-sibling::w:r")).empty?
           r_node = r_nodes.last
           Containers::TextRun.new(r_node)
         else
