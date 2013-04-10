@@ -3,8 +3,11 @@ require 'nokogiri'
 module Docx
   module Elements
     module Element
+      DEFAULT_TAG = ''
+
       def self.included(base)
         base.extend(ClassMethods)
+        base.const_set(:TAG, Element::DEFAULT_TAG) unless base.const_defined?(:TAG)
       end
 
       attr_accessor :node
@@ -24,20 +27,24 @@ module Docx
       # Insert node as last child
       def append_to(element)
         @node = element.node.add_child(@node)
+        self
       end
 
       # Insert node as first child (after properties)
       def prepend_to(element)
         @node = element.node.properties.add_next_sibling(@node)
+        self
       end
 
       def insert_after(element)
         # Returns newly re-parented node
         @node = element.node.add_next_sibling(@node)
+        self
       end
 
       def insert_before(element)
         @node = element.node.add_previous_sibling(@node)
+        self
       end
 
       # Creation/edit methods
@@ -48,12 +55,13 @@ module Docx
       module ClassMethods
         def create_with(element)
           # Need to somehow get the xml document accessible here by default, but this is alright in the interim
-          self.new(Nokogiri::XML::Node.new("w:#{TAG}"), element.node)
+          self.new(Nokogiri::XML::Node.new("w:#{self.const_get(:TAG)}", element.node))
         end
 
         def create_within(element)
           new_element = create_with(element)
           new_element.append_to(element)
+          new_element
         end
       end
     end

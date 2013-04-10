@@ -4,7 +4,6 @@ module Docx
   module Elements
     module Containers
       module Container
-        include Elements::Element
         # Relation methods
         # TODO: Create a properties object, include Element
         def properties
