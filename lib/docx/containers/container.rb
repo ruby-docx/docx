@@ -10,6 +10,7 @@ module Docx
           @node.at_xpath("./#{@properties_tag}")
         end
 
+        # TODO: Maybe merge and then clear so there is only one text node left.
         def blank!
           @node.xpath(".//w:t").each {|t| t.content = '' }
         end

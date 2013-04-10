@@ -40,6 +40,24 @@ class EditTest < Test::Unit::TestCase
     assert_equal 'test textbar', @doc.paragraphs.first.text
   end
 
+  def test_inserting_multiple_lines_at_bookmark
+    assert_equal '', @doc.paragraphs.last.text
+    new_lines = ['replacement test', 'second paragraph test', 'and a third paragraph test']
+    @doc.bookmarks['isolated_bookmark'].insert_multiple_lines(new_lines)
+    new_lines.each_index do |line|
+      assert_equal new_lines[line], @doc.paragraphs[line + 2].text
+    end
+  end
+
+  def test_inserting_multiple_lines_at_bookmark_with_replacement
+    assert_equal 'placeholder text', @doc.paragraphs[1].text
+    new_lines = ['replacement test', 'second paragraph test', 'and a third paragraph test']
+    @doc.bookmarks['word_splitting_bookmark'].insert_multiple_lines(new_lines)
+    new_lines.each_index do |line|
+      assert_equal new_lines[line], @doc.paragraphs[line + 1].text
+    end
+  end
+
   # Insert text intelligently around bookmark
   def test_inserting_text_around_bookmark
 
