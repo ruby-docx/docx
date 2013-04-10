@@ -36,3 +36,15 @@ d.each_paragraph do |p|
     run.text
   end
 end
+```
+
+## Development
+
+### todo
+
+* Add better formatting identification for specific nodes and other formatting indicators (text size, paragraph spacing)
+* Calculate element formatting based on values present in element properties as well as properties inherited from parents
+* Default formatting of inserted elements to inherited values
+* Implement formattable elements.
+* Implement styles.
+* Easier multi-line text insertion at a single bookmark (inserting paragraph nodes after the one containing the bookmark)
