@@ -76,7 +76,7 @@ class FormattingTest < Test::Unit::TestCase
   private
   
   def default_formatting
-    Docx::Containers::TextRun::DEFAULT_FORMATTING
+    Docx::Elements::Containers::TextRun::DEFAULT_FORMATTING
   end
   
   def only_italic
