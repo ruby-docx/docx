@@ -35,14 +35,14 @@ module Docx
 
     def save(path)
       update
-      Zip::ZipFile.open(path, Zip::ZipFile::CREATE) do |out|
+      Zip::ZipOutputStream.open(path) do |out|
         zip.each do |entry|
-          out.get_output_stream(entry.name) do |o|
-            if @replace[entry.name]
-              o.write(@replace[entry.name])
-            else
-              o.write(zip.read(entry.name))
-            end
+          out.put_next_entry(entry.name)
+
+          if @replace[entry.name]
+            out.write(@replace[entry.name])
+          else
+            out.write(zip.read(entry.name))
           end
         end
       end

@@ -23,12 +23,12 @@ class SaveTest < Test::Unit::TestCase
 
     temp_file.close
     temp_file.unlink
-    # ensure temp file is gone
-    assert equal(nil, File.exists?(@new_doc_path))
+    # ensure temp file has been removed
+    assert_equal(false, File.exists?(@new_doc_path))
   end
 
   def teardown
-    if @new_doc and @new_doc_path
+    if File.exists?(@new_doc_path)
       File.delete(@new_doc_path)
     end
   end
