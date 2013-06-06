@@ -7,6 +7,7 @@ module Docx
     module Element
       DEFAULT_TAG = ''
 
+      # Ensure that a 'tag' corresponding to the XML element that defines the element is defined
       def self.included(base)
         base.extend(ClassMethods)
         base.const_set(:TAG, Element::DEFAULT_TAG) unless base.const_defined?(:TAG)
@@ -20,7 +21,7 @@ module Docx
         @node.at_xpath("./parent::#{type}")
       end
 
-      # TODO: Should create a docx paragraph from this
+      # Get parent paragraph of element
       def parent_paragraph
         Elements::Containers::Paragraph.new(parent('w:p'))
       end

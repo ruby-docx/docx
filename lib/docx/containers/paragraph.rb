@@ -17,7 +17,7 @@ module Docx
           @properties_tag = 'pPr'
         end
 
-        # Handle direct text insertion into paragraph on some conditions
+        # Set text of paragraph
         def text=(content)
           if text_runs.size == 1
             text_runs.first.text = content
@@ -31,14 +31,17 @@ module Docx
           end
         end
 
+        # Return text of paragraph
         def to_s
           text_runs.map(&:text).join('')
         end
 
+        # Array of text runs contained within paragraph
         def text_runs
           @node.xpath('w:r').map {|r_node| Containers::TextRun.new(r_node) }
         end
 
+        # Iterate over each text run within a paragraph
         def each_text_run
           text_runs.each { |tr| yield(tr) }
         end

@@ -6,6 +6,7 @@ require 'zip/zip'
 module Docx
   class Parser
     attr_reader :xml, :doc, :zip
+    
     def initialize(path)
       @zip = Zip::ZipFile.open(path)
       @xml = @zip.read('word/document.xml')
@@ -20,6 +21,7 @@ module Docx
       @doc.xpath('//w:document//w:body//w:p').map { |p_node| parse_paragraph_from p_node }
     end
 
+    # Returns hash of bookmarks
     def bookmarks
       bkmrks_hsh = Hash.new
       bkmrks_ary = @doc.xpath('//w:bookmarkStart').map { |b_node| parse_bookmark_from b_node }

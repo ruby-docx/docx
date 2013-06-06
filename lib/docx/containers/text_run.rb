@@ -26,6 +26,7 @@ module Docx
           @formatting = parse_formatting || DEFAULT_FORMATTING
         end
 
+        # Set text of text run
         def text=(content)
           if @text_nodes.size == 1
             @text_nodes.first.content = content
@@ -35,6 +36,7 @@ module Docx
           end
         end
 
+        # Returns text contained within text run
         def parse_text
           @text_nodes.map(&:content).join('')
         end

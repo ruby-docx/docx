@@ -13,16 +13,19 @@ module Docx
         @name = @node['w:name']
       end
 
+      # Insert text before bookmark node
       def insert_text_before(text)
         text_run = get_run_after
         text_run.text = "#{text}#{text_run.text}"
       end
 
+      # Insert text after bookmark node
       def insert_text_after(text)
         text_run = get_run_before
         text_run.text = "#{text_run.text}#{text}"
       end
 
+      # Insert multiple lines adjacent to bookmark node
       def insert_multiple_lines(text_array)
         # Hold paragraphs to be inserted into, corresponding to the index of the strings in the text array
         paragraphs = []
@@ -44,6 +47,7 @@ module Docx
         end
       end
 
+      # Get text run immediately prior to bookmark node
       def get_run_before
         # at_xpath returns the first match found and preceding-sibling returns siblings in the 
         # order they appear in the document not the order as they appear when moving out from
@@ -58,6 +62,7 @@ module Docx
         end
       end
 
+      # Get text run immediately after bookmark node
       def get_run_after
         if (r_node = @node.at_xpath("./following-sibling::w:r"))
           Containers::TextRun.new(r_node)
