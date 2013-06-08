@@ -33,10 +33,12 @@ module Docx
     
     private
     
+    # generate Elements::Containers::Paragraph from paragraph XML node
     def parse_paragraph_from(p_node)
       Elements::Containers::Paragraph.new(p_node)
     end
 
+    # generate Elements::Bookmark from bookmark XML node
     def parse_bookmark_from(b_node)
       Elements::Bookmark.new(b_node)
     end

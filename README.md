@@ -15,14 +15,16 @@ requires ruby (only tested with 1.9.3 so far)
 ``` ruby
 require 'docx'
 
-d = Docx::Document.open('example.docx')
-# Array of paragraphs
-d.paragraphs.each do |p|
-  puts d
+# Create a Docx::Document object for our existing docx file
+doc = Docx::Document.open('example.docx')
+
+# Retrieve and display paragraphs
+doc.paragraphs.each do |p|
+  puts p
 end
 
-# Hash of Bookmarks. Bookmark names as keys correspond to bookmark objects.
-d.bookmarks.each_pair do |bookmark_name, bookmark_object|
+# Retrieve and display bookmarks, returned as hash with bookmark names as keys and objects as values
+doc.bookmarks.each_pair do |bookmark_name, bookmark_object|
   puts bookmark_name
 end
 ```
@@ -32,11 +34,17 @@ end
 ``` ruby
 require 'docx'
 
-d = Docx::Document.open('example.docx')
-# Insert a single line after a bookmark
-d.bookmarks['example_bookmark'].insert_after("Hello world.")
-# Each value in array is put on a separate line
-d.bookmarks['example_bookmark'].insert_multiple_lines_after(['Hello', 'World', 'foo'])
+# Create a Docx::Document object for our existing docx file
+doc = Docx::Document.open('example.docx')
+
+# Insert a single line of text after one of our bookmarks
+doc.bookmarks['example_bookmark'].insert_after("Hello world.")
+
+# Insert multiple lines of text at our bookmark
+doc.bookmarks['example_bookmark_2'].insert_multiple_lines_after(['Hello', 'World', 'foo'])
+
+# Save document to specified path
+doc.save('example-edited.docx')
 ```
 
 ### advanced
@@ -46,12 +54,12 @@ require 'docx'
 
 d = Docx::Document.open('example.docx')
 
-# The Nokogiri node on which an element is based can be accessed using #node
+# The Nokogiri::XML::Node on which an element is based can be accessed using #node
 d.paragraphs.each do |p|
   puts p.node.inspect
 end
 
-# The #xpath and #at_xpath are delegated to the node from the element, saving a step
+# The #xpath and #at_xpath methods are delegated to the node from the element, saving a step
 p_element = d.paragraphs.first
 p_children = p_element.xpath("//child::*") # selects all children
 p_child = p_element.at_xpath("//child::*") # selects first child

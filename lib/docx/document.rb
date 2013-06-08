@@ -27,28 +27,33 @@ module Docx
       end
     end
     
-    # @param [String] path
-    # @return [Docx::Document]
+    # With no associated block, Docx::Document.open is a synonym for Docx::Document.new. If the optional code block is given, it will be passed the opened +docx+ file as an argument and the Docx::Document oject will automatically be closed when the block terminates. The values of the block will be returned from Docx::Document.open.
+    # call-seq:
+    #   open(filepath) => file
+    #   open(filepath) {|file| block } => obj
     def self.open(path, &block)
       self.new(path, &block)
     end
 
     ##
-    # +Deprecated+
+    # *Deprecated*
     # 
     # Iterates over paragraphs within document
+    # call-seq:
+    #   each_paragraph => Enumerator
     def each_paragraph
       paragraphs.each { |p| yield(p) }
     end
     
-    # @return [String]
+    # call-seq:
+    #   to_s -> string
     def to_s
       paragraphs.map(&:to_s).join("\n")
     end
 
     # Save document to provided path
     # call-seq:
-    #   save(arg1) => void
+    #   save(filepath) => void
     def save(path)
       update
       Zip::ZipOutputStream.open(path) do |out|

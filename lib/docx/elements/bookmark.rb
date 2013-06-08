@@ -13,19 +13,19 @@ module Docx
         @name = @node['w:name']
       end
 
-      # Insert text before bookmark node
+      # Insert text before bookmarkStart node
       def insert_text_before(text)
         text_run = get_run_after
         text_run.text = "#{text}#{text_run.text}"
       end
 
-      # Insert text after bookmark node
+      # Insert text after bookmarkStart node
       def insert_text_after(text)
         text_run = get_run_before
         text_run.text = "#{text_run.text}#{text}"
       end
 
-      # Insert multiple lines adjacent to bookmark node
+      # insert multiple lines starting with paragraph containing bookmark node.
       def insert_multiple_lines(text_array)
         # Hold paragraphs to be inserted into, corresponding to the index of the strings in the text array
         paragraphs = []
