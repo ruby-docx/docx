@@ -3,7 +3,11 @@ module Docx
     class Text
       include Element
       delegate :content, :content=, :to => :@node
-      TAG = 't'
+
+      def self.tag
+        't'
+      end
+
 
       def initialize(node)
         @node = node
