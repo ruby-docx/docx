@@ -1,5 +1,6 @@
 require 'rake'
 require 'rake/testtask'
+require "bundler/gem_tasks"
 
 Rake::TestTask.new(:test) do |t|
   t.libs << 'test'
@@ -14,5 +15,3 @@ desc "Open an irb session preloaded with this library."
 task :console do
   sh "irb -I lib/ -r docx"
 end
-
-
