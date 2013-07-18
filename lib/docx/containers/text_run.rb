@@ -13,7 +13,9 @@ module Docx
           underline: false
         }
         
-        TAG = 'r'
+        def self.tag
+          'r'
+        end
 
         attr_reader :text
         attr_reader :formatting

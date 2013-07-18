@@ -58,7 +58,7 @@ module Docx
       module ClassMethods
         def create_with(element)
           # Need to somehow get the xml document accessible here by default, but this is alright in the interim
-          self.new(Nokogiri::XML::Node.new("w:#{self.const_get(:TAG)}", element.node))
+          self.new(Nokogiri::XML::Node.new("w:#{self.tag}", element.node))
         end
 
         def create_within(element)

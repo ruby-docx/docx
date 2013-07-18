@@ -6,7 +6,9 @@ module Docx
       include Element
       attr_accessor :name
       
-      TAG = 'bookmarkStart'
+      def self.tag
+        'bookmarkStart'
+      end
 
       def initialize(node)
         @node = node

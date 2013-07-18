@@ -8,7 +8,10 @@ module Docx
         include Container
         include Elements::Element
 
-        TAG = 'p'
+        def self.tag
+          'p'
+        end
+
 
         # Child elements: pPr, r, fldSimple, hlink, subDoc
         # http://msdn.microsoft.com/en-us/library/office/ee364458(v=office.11).aspx
