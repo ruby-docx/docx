@@ -30,6 +30,10 @@ module Docx
       bkmrks_ary.each {|b| bkmrks_hsh[b.name] = b }
       bkmrks_hsh
     end
+
+    def tables
+      @doc.xpath('//w:document//w:body//w:tbl').map { |t_node| parse_table_from t_node }
+    end
     
     private
     
@@ -41,6 +45,10 @@ module Docx
     # generate Elements::Bookmark from bookmark XML node
     def parse_bookmark_from(b_node)
       Elements::Bookmark.new(b_node)
+    end
+
+    def parse_table_from(t_node)
+      Elements::Containers::Table.new(t_node)
     end
   end
 end

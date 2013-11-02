@@ -39,6 +39,52 @@ describe Docx::Document do
     end
   end
 
+  describe 'read tables' do
+    before do
+      @doc = Docx::Document.open(@fixtures_path + '/tables.docx')
+    end
+
+    it "should have tables with rows and cells" do
+      expect(@doc.tables.count).to eq 2
+      @doc.tables.each do |table|
+        expect(table).to be_an_instance_of(Docx::Elements::Containers::Table)
+        table.rows.each do |row|
+          expect(row).to be_an_instance_of(Docx::Elements::Containers::TableRow)
+          row.cells.each do |cell|
+            expect(cell).to be_an_instance_of(Docx::Elements::Containers::TableCell)
+          end
+        end
+      end
+    end
+
+    it "should have tables with columns and cells" do
+      @doc.tables.each do |table|
+        table.columns.each do |column|
+          expect(column).to be_an_instance_of(Docx::Elements::Containers::TableColumn)
+          column.cells.each do |cell|
+            expect(cell).to be_an_instance_of(Docx::Elements::Containers::TableCell)
+          end
+        end
+      end
+    end
+
+    it "should have proper count" do
+      expect(@doc.tables[0].row_count).to eq 171
+      expect(@doc.tables[1].row_count).to eq 2
+      expect(@doc.tables[0].column_count).to eq 2
+      expect(@doc.tables[1].column_count).to eq 2
+    end
+
+    it "should have tables with proper text" do
+      @doc.tables[0].rows[0].cells[0].text.should eq "ENGLISH"
+      @doc.tables[0].rows[0].cells[1].text.should eq "FRANÇAIS"
+      @doc.tables[1].rows[0].cells[0].text.should eq "Second table"
+      @doc.tables[1].rows[0].cells[1].text.should eq "Second tableau"
+      @doc.tables[0].columns[0].cells[5].text.should eq "aphids"
+      @doc.tables[0].columns[1].cells[5].text.should eq "puceron"
+    end
+  end
+
   describe 'editing'  do
     before do
       @doc = Docx::Document.open(@fixtures_path + '/editing.docx')
