@@ -83,6 +83,10 @@ describe Docx::Document do
       @doc.tables[0].columns[0].cells[5].text.should eq "aphids"
       @doc.tables[0].columns[1].cells[5].text.should eq "puceron"
     end
+
+    it "should read embedded links" do
+      @doc.tables[0].columns[1].cells[1].text.should =~ /^Directive/
+    end
   end
 
   describe 'editing'  do
