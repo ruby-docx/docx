@@ -41,7 +41,7 @@ module Docx
 
         # Array of text runs contained within paragraph
         def text_runs
-          @node.xpath('w:r').map {|r_node| Containers::TextRun.new(r_node) }
+          @node.xpath('w:r|w:hyperlink/w:r').map {|r_node| Containers::TextRun.new(r_node) }
         end
 
         # Iterate over each text run within a paragraph

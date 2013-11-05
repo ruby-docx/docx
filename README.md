@@ -1,6 +1,6 @@
 # docx
 
-a ruby library/gem for interacting with `.docx` files. currently capabilities include reading paragraphs/bookmarks, inserting text at bookmarks, and saving the document.
+a ruby library/gem for interacting with `.docx` files. currently capabilities include reading paragraphs/bookmarks, inserting text at bookmarks, reading tables/rows/columns/cells and saving the document.
 
 ## usage
 
@@ -26,6 +26,36 @@ end
 # Retrieve and display bookmarks, returned as hash with bookmark names as keys and objects as values
 doc.bookmarks.each_pair do |bookmark_name, bookmark_object|
   puts bookmark_name
+end
+```
+
+### reading tables
+
+``` ruby
+require 'docx'
+
+# Create a Docx::Document object for our existing docx file
+doc = Docx::Document.open('tables.docx')
+
+first_table = doc.tables[0]
+puts first_table.row_count
+puts first_table.column_count
+puts first_table.rows[0].cells[0].text
+puts first_table.columns[0].cells[0].text
+
+# Iterate through tables
+doc.tables.each do |table|
+  table.rows.each do |row| # Row-based iteration
+    row.cells.each do |cell|
+      puts cell.text
+    end
+  end
+  
+  table.columns.each do |column| # Column-based iteration
+    column.cells.each do |cell|
+      puts cell.text
+    end
+  end
 end
 ```
 
