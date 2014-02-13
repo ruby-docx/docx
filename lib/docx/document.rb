@@ -1,5 +1,5 @@
 require 'docx/parser'
-require 'zip/zip'
+require 'zip'
 
 module Docx
   # The Document class wraps around a docx file and provides methods to
@@ -56,7 +56,7 @@ module Docx
     #   save(filepath) => void
     def save(path)
       update
-      Zip::ZipOutputStream.open(path) do |out|
+      Zip::OutputStream.open(path) do |out|
         zip.each do |entry|
           out.put_next_entry(entry.name)
 
