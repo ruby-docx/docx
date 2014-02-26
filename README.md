@@ -68,7 +68,7 @@ require 'docx'
 doc = Docx::Document.open('example.docx')
 
 # Insert a single line of text after one of our bookmarks
-doc.bookmarks['example_bookmark'].insert_after("Hello world.")
+doc.bookmarks['example_bookmark'].insert_text_after("Hello world.")
 
 # Insert multiple lines of text at our bookmark
 doc.bookmarks['example_bookmark_2'].insert_multiple_lines_after(['Hello', 'World', 'foo'])
