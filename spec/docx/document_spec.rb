@@ -5,6 +5,7 @@ require 'tempfile'
 describe Docx::Document do
   before(:all) do
     @fixtures_path = "spec/fixtures"
+    @formatting_line_count = 11 # number of lines the formatting.docx file has
   end
 
   describe 'reading' do
@@ -166,7 +167,7 @@ describe Docx::Document do
     end
 
     it 'should have the correct text' do
-      @doc.paragraphs.size.should eq 11
+      @doc.paragraphs.size.should eq @formatting_line_count
       @doc.paragraphs[0].text.should eq 'Normal'
       @doc.paragraphs[1].text.should eq 'Italic'
       @doc.paragraphs[2].text.should eq 'Bold'
@@ -303,5 +304,71 @@ describe Docx::Document do
         File.delete(@new_doc_path)
       end
     end
+  end
+
+
+  describe 'outputting html' do
+    before do
+      @doc = Docx::Document.open(@fixtures_path + '/formatting.docx')
+      @formatted_line = @doc.paragraphs[5]
+    end
+
+    it 'should wrap pragraphs in a p tag' do
+      scan = @doc.paragraphs[0].to_html.scan(/(^\<p).+((?<=\>)\w+)(\<\/p>$)/).flatten
+      scan.first.should eq '<p'
+      scan.last.should eq '</p>'
+      scan[1].should eq 'Normal'
+    end
+   
+    it 'should emphasize italicized text' do
+      scan = @doc.paragraphs[1].to_html.scan(/(\<em\>)(\w+)(\<\/em\>)/).flatten
+      scan.first.should eq '<em>'
+      scan.last.should eq '</em>'
+      scan[1].should eq 'Italic'
+    end
+
+    it 'should strong bolded text' do
+      scan = @doc.paragraphs[2].to_html.scan(/(\<strong\>)(\w+)(\<\/strong\>)/).flatten
+      scan.first.should eq '<strong>'
+      scan.last.should eq '</strong>'
+      scan[1].should eq 'Bold'
+    end
+
+    it 'should underline underlined text' do
+      scan = @doc.paragraphs[3].to_html.scan(/\<span\s+([^\>]+)/).flatten
+      scan.first.should eq 'style="text-decoration:underline;"'
+    end
+
+    it 'should justify paragraphs' do
+      regex = /^<p[^\"]+.(?<=\")([^\"]+)/
+      @doc.paragraphs[6].to_html.scan(regex).flatten.first.split(';').include?('text-align:center').should be_true
+      @doc.paragraphs[7].to_html.scan(regex).flatten.first.split(';').include?('text-align:left').should be_false
+      @doc.paragraphs[8].to_html.scan(regex).flatten.first.split(';').include?('text-align:right').should be_true
+    end
+
+    it "should set font size on styled paragraphs" do
+      regex = /(\<p{1})[^\>]+style\=\"([^\"]+).+(<\/p>)/      
+      scan = @doc.paragraphs[9].to_html.scan(regex).flatten
+      scan.first.should eq '<p'
+      scan.last.should eq '</p>'
+      scan[1].split(';').include?('font-size:14pt').should be_true
+    end
+
+    it 'should set font size on styled text runs' do
+      regex = /(\<span)[^\>]+style\=\"([^\"]+)[^\<]+(<\/span>)/
+      scan = @doc.paragraphs[10].to_html.scan(regex).flatten
+      scan.first.should eq '<span'
+      scan.last.should eq '</span>'
+      scan[1].split(';').include?('font-size:16pt').should be_true
+    end
+
+    it 'should output an entire document as html' do
+      @doc.to_html.scan(/(\<p)/).flatten.size.should eq @formatting_line_count
+    end
+
+    it 'should output styled html' do
+      @formatted_line.to_html.scan('<span style="text-decoration:underline;"><strong><em>all</em></strong></span>').size.should eq 1
+    end
+
   end
 end

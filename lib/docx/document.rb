@@ -88,6 +88,11 @@ module Docx
       paragraphs.map(&:to_s).join("\n")
     end
 
+    # Output entire document as a String HTML fragment
+    def to_html
+      paragraphs.map(&:to_html).join('\n')
+    end
+
     # Save document to provided path
     # call-seq:
     #   save(filepath) => void

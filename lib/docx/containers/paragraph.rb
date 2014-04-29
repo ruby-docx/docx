@@ -41,6 +41,18 @@ module Docx
           text_runs.map(&:text).join('')
         end
 
+        # Return paragraph as a <p></p> HTML fragment with formatting based on properties.
+        def to_html
+          html = ''
+          text_runs.each do |text_run|
+            html << text_run.to_html
+          end
+          styles = { 'font-size' => "#{font_size}pt" }
+          styles['text-align'] = alignment if alignment
+          html_tag(:p, content: html, styles: styles)
+        end
+
+
         # Array of text runs contained within paragraph
         def text_runs
           @node.xpath('w:r|w:hyperlink/w:r').map { |r_node| Containers::TextRun.new(r_node, @document_properties) }

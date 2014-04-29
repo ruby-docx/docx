@@ -56,7 +56,20 @@ module Docx
         def to_s
           @text
         end
-        
+
+        # Return text as a HTML fragment with formatting based on properties.
+        def to_html
+          html = @text
+          html = html_tag(:em, content: html) if italicized?
+          html = html_tag(:strong, content: html) if bolded?
+          styles = {}
+          styles['text-decoration'] = 'underline' if underlined?
+          # No need to be granular with font size down to the span level if it doesn't vary.
+          styles['font-size'] = "#{font_size}pt" if font_size != @font_size 
+          html = html_tag(:span, content: html, styles: styles) unless styles.empty?
+          return html
+        end
+
         def italicized?
           @formatting[:italic]
         end
