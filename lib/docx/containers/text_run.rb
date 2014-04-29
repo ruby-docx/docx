@@ -20,12 +20,14 @@ module Docx
         attr_reader :text
         attr_reader :formatting
         
-        def initialize(node)
+        def initialize(node, document_properties = {})
           @node = node
           @text_nodes = @node.xpath('w:t').map {|t_node| Elements::Text.new(t_node) }
           @properties_tag = 'rPr'
           @text       = parse_text || ''
           @formatting = parse_formatting || DEFAULT_FORMATTING
+          @document_properties = document_properties
+          @font_size = @document_properties[:font_size]
         end
 
         # Set text of text run
@@ -65,6 +67,11 @@ module Docx
         
         def underlined?
           @formatting[:underline]
+        end
+
+        def font_size
+          size_tag = @node.xpath('w:rPr//w:sz').first
+          size_tag ? size_tag.attributes['val'].value.to_i / 2 : @font_size
         end
       end
     end

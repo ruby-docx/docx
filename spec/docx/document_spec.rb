@@ -166,13 +166,18 @@ describe Docx::Document do
     end
 
     it 'should have the correct text' do
-      @doc.paragraphs.size.should eq 6
+      @doc.paragraphs.size.should eq 11
       @doc.paragraphs[0].text.should eq 'Normal'
       @doc.paragraphs[1].text.should eq 'Italic'
       @doc.paragraphs[2].text.should eq 'Bold'
       @doc.paragraphs[3].text.should eq 'Underline'
       @doc.paragraphs[4].text.should eq 'Normal'
       @doc.paragraphs[5].text.should eq 'This is a sentence with all formatting options in the middle of the sentence.'
+      @doc.paragraphs[6].text.should eq 'This is a centered paragraph.'
+      @doc.paragraphs[7].text.should eq 'This paragraph is aligned left.'
+      @doc.paragraphs[8].text.should eq 'This paragraph is aligned right.'
+      @doc.paragraphs[9].text.should eq 'This paragraph is 14 points.'
+      @doc.paragraphs[10].text.should eq 'This paragraph has a word at 16 points.'
     end
 
     it 'should contain a paragraph with multiple text runs' do
@@ -224,6 +229,47 @@ describe Docx::Document do
       @doc.paragraphs[5].text_runs[2].italicized?.should be_false
       @doc.paragraphs[5].text_runs[2].bolded?.should be_false
       @doc.paragraphs[5].text_runs[2].underlined?.should be_false
+    end
+
+    it 'should detect centered paragraphs' do
+      @doc.paragraphs[5].aligned_center?.should be_false
+      @doc.paragraphs[6].aligned_center?.should be_true
+      @doc.paragraphs[7].aligned_center?.should be_false
+    end
+
+    it 'should detect left justified paragraphs' do
+      @doc.paragraphs[6].aligned_left?.should be_false
+      @doc.paragraphs[7].aligned_left?.should be_true
+      @doc.paragraphs[8].aligned_left?.should be_false
+    end
+
+    it 'should detect right justified paragraphs' do
+      @doc.paragraphs[7].aligned_right?.should be_false
+      @doc.paragraphs[8].aligned_right?.should be_true
+      @doc.paragraphs[9].aligned_right?.should be_false
+    end
+
+    # ECMA-376 Office Open XML spec (4th edition), 17.3.2.38, size is
+    # defined in half-points, meaning 14pt text returns a value of 28.
+    # http://www.ecma-international.org/publications/standards/Ecma-376.htm
+    it 'should return proper font size for paragraphs' do
+      @doc.font_size.should eq 11
+      @doc.paragraphs[5].font_size.should eq 11
+      paragraph = @doc.paragraphs[9]
+      paragraph.font_size.should eq 14
+      paragraph.text_runs[0].font_size.should eq 14
+    end
+
+    it 'should return proper font size for runs' do
+      @doc.font_size.should eq 11
+      paragraph = @doc.paragraphs[10]
+      paragraph.font_size.should eq 11
+      text_runs = paragraph.text_runs
+      text_runs[0].font_size.should eq 11
+      text_runs[1].font_size.should eq 16
+      text_runs[2].font_size.should eq 11
+      text_runs[3].font_size.should eq 11
+      text_runs[4].font_size.should eq 11
     end
   end
 

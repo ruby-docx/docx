@@ -18,19 +18,28 @@ module Docx
   #     puts d.text
   #   end
   class Document
-    attr_reader :xml, :doc, :zip
+    attr_reader :xml, :doc, :zip, :styles
     
     def initialize(path, &block)
       @replace = {}
       @zip = Zip::ZipFile.open(path)
-      @xml = @zip.read('word/document.xml')
-      @doc = Nokogiri::XML(@xml)
+      @document_xml = @zip.read('word/document.xml')
+      @doc = Nokogiri::XML(@document_xml)
+      @styles_xml = @zip.read('word/styles.xml')
+      @styles = Nokogiri::XML(@styles_xml)
       if block_given?
         yield self
         @zip.close
       end
     end
-    
+
+    # This stores the current global document properties, for now
+    def document_properties
+      {
+        font_size: font_size
+      }
+    end
+
     # With no associated block, Docx::Document.open is a synonym for Docx::Document.new. If the optional code block is given, it will be passed the opened +docx+ file as an argument and the Docx::Document oject will automatically be closed when the block terminates. The values of the block will be returned from Docx::Document.open.
     # call-seq:
     #   open(filepath) => file
@@ -54,6 +63,13 @@ module Docx
 
     def tables
       @doc.xpath('//w:document//w:body//w:tbl').map { |t_node| parse_table_from t_node }
+    end
+
+    # Some documents have this set, others don't.
+    # Values are returned as half-points, so to get points, that's why it's divided by 2.
+    def font_size
+      size_tag = @styles.xpath('//w:docDefaults//w:rPrDefault//w:rPr//w:sz').first
+      size_tag ? size_tag.attributes['val'].value.to_i / 2 : nil
     end
 
     ##
@@ -106,7 +122,7 @@ module Docx
 
     # generate Elements::Containers::Paragraph from paragraph XML node
     def parse_paragraph_from(p_node)
-      Elements::Containers::Paragraph.new(p_node)
+      Elements::Containers::Paragraph.new(p_node, document_properties)
     end
 
     # generate Elements::Bookmark from bookmark XML node
