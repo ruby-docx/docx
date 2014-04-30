@@ -55,6 +55,30 @@ module Docx
         self.class.new(@node.dup)
       end
 
+      # A method to wrap content in an HTML tag.
+      # Currently used in paragraph and text_run for the to_html methods
+      #
+      # content:: The base text content for the tag.
+      # styles:: Hash of the inline CSS styles to be applied. e.g.
+      #          { 'font-size' => '12pt', 'text-decoration' => 'underline' }
+      #
+      def html_tag(name, options = {})
+        content = options[:content]
+        styles = options[:styles]
+
+        html = "<#{name.to_s}"
+        unless styles.nil? || styles.empty?
+          styles_array = []
+          styles.each do |property, value|
+            styles_array << "#{property.to_s}:#{value};"
+          end
+          html << " style=\"#{styles_array.join('')}\""
+        end
+        html << ">"
+        html << content if content
+        html << "</#{name.to_s}>"
+      end
+
       module ClassMethods
         def create_with(element)
           # Need to somehow get the xml document accessible here by default, but this is alright in the interim
