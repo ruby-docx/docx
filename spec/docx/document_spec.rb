@@ -5,7 +5,7 @@ require 'tempfile'
 describe Docx::Document do
   before(:all) do
     @fixtures_path = "spec/fixtures"
-    @formatting_line_count = 11 # number of lines the formatting.docx file has
+    @formatting_line_count = 12 # number of lines the formatting.docx file has
   end
 
   describe 'reading' do
@@ -311,25 +311,29 @@ describe Docx::Document do
     before do
       @doc = Docx::Document.open(@fixtures_path + '/formatting.docx')
       @formatted_line = @doc.paragraphs[5]
+      @p_regex = /(^\<p).+((?<=\>)\w+)(\<\/p>$)/
+      @span_regex = /(\<span).+((?<=\>)\w+)(<\/span>)/
+      @em_regex = /(\<em).+((?<=\>)\w+)(\<\/em\>)/
+      @strong_regex = /(\<strong).+((?<=\>)\w+)(\<\/strong\>)/
     end
 
     it 'should wrap pragraphs in a p tag' do
-      scan = @doc.paragraphs[0].to_html.scan(/(^\<p).+((?<=\>)\w+)(\<\/p>$)/).flatten
+      scan = @doc.paragraphs[0].to_html.scan(@p_regex).flatten
       scan.first.should eq '<p'
       scan.last.should eq '</p>'
       scan[1].should eq 'Normal'
     end
    
     it 'should emphasize italicized text' do
-      scan = @doc.paragraphs[1].to_html.scan(/(\<em\>)(\w+)(\<\/em\>)/).flatten
-      scan.first.should eq '<em>'
+      scan = @doc.paragraphs[1].to_html.scan(@em_regex).flatten
+      scan.first.should eq '<em'
       scan.last.should eq '</em>'
       scan[1].should eq 'Italic'
     end
 
     it 'should strong bolded text' do
-      scan = @doc.paragraphs[2].to_html.scan(/(\<strong\>)(\w+)(\<\/strong\>)/).flatten
-      scan.first.should eq '<strong>'
+      scan = @doc.paragraphs[2].to_html.scan(@strong_regex).flatten
+      scan.first.should eq '<strong'
       scan.last.should eq '</strong>'
       scan[1].should eq 'Bold'
     end
@@ -362,7 +366,25 @@ describe Docx::Document do
       scan[1].split(';').include?('font-size:16pt').should be_true
     end
 
-    it 'should output an entire document as html' do
+    it 'should properly highlight different text in different places in a sentence' do
+      paragraph = @doc.paragraphs[11]
+      scan = paragraph.to_html.scan(@em_regex).flatten
+      scan.first.should eq '<em'
+      scan.last.should eq '</em>'
+      scan[1].should eq 'sentence'
+      scan = paragraph.to_html.scan(@strong_regex).flatten
+      scan.first.should eq '<strong'
+      scan.last.should eq '</strong>'
+      scan[1].should eq 'formatting'
+      scan = paragraph.to_html.scan(@span_regex).flatten
+      scan.first.should eq '<span'
+      scan.last.should eq '</span>'
+      scan[1].should eq 'different'
+      scan = paragraph.to_html.scan(/\<span\s+([^\>]+)/).flatten
+      scan.first.should eq 'style="text-decoration:underline;"'
+    end
+
+    it 'should output an entire document as html fragment' do
       @doc.to_html.scan(/(\<p)/).flatten.size.should eq @formatting_line_count
     end
 
