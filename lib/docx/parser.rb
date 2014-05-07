@@ -1,14 +1,14 @@
 require 'docx/containers'
 require 'docx/elements'
 require 'nokogiri'
-require 'zip/zip'
+require 'zip'
 
 module Docx
   class Parser
     attr_reader :xml, :doc, :zip
     
     def initialize(path)
-      @zip = Zip::ZipFile.open(path)
+      @zip = Zip::File.open(path)
       @xml = @zip.read('word/document.xml')
       @doc = Nokogiri::XML(@xml)
       if block_given?
