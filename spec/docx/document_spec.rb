@@ -214,12 +214,12 @@ describe Docx::Document do
       @doc.paragraphs[5].text_runs[0].italicized?.should be_false
       @doc.paragraphs[5].text_runs[0].bolded?.should be_false
       @doc.paragraphs[5].text_runs[0].underlined?.should be_false
-      
+
       @formatting[5][1].should eq @all_formatted
       @doc.paragraphs[5].text_runs[1].italicized?.should be_true
       @doc.paragraphs[5].text_runs[1].bolded?.should be_true
       @doc.paragraphs[5].text_runs[1].underlined?.should be_true
-      
+
       @formatting[5][2].should eq @default_formatting
       @doc.paragraphs[5].text_runs[2].italicized?.should be_false
       @doc.paragraphs[5].text_runs[2].bolded?.should be_false
@@ -255,6 +255,31 @@ describe Docx::Document do
     after do
       if File.exists?(@new_doc_path)
         File.delete(@new_doc_path)
+      end
+    end
+  end
+
+  describe 'replacing contents' do
+    let(:replacement_file_path) { @fixtures_path + '/replacement.png' }
+    let(:temp_file_path){ Tempfile.new(['docx_gem', '.docx']).path }
+    let(:entry_path){ 'word/media/image1.png' }
+    let(:doc){ Docx::Document.open(@fixtures_path + '/replacement.docx') }
+
+    it 'should replace existing file within the document' do
+      File.open replacement_file_path, "rb" do |io|
+        doc.replace_entry entry_path, io.read
+      end
+
+      doc.save(temp_file_path)
+
+      File.open replacement_file_path, "rb" do |io|
+        expect(Zip::File.open(temp_file_path).read entry_path).to eq io.read
+      end
+    end
+
+    after do
+      if File.exists?(temp_file_path)
+        File.delete(temp_file_path)
       end
     end
   end
