@@ -1,10 +1,10 @@
 # This is a fork!!!
 
-This library stands on the shoulders of the original [docx](https://github.com/chrahunt/docx) -- it is my hope that @chrahunt will pull the changes I've incorporated into this library back into his original library.
+This library stands on the shoulders of the original [docx](https://github.com/chrahunt/docx) -- it is my hope that [@chrahunt](https://github.com/chrahunt) will pull the changes I've incorporated into this library back into his original library.
 
 This library depends on the latest version of rubyzip and incorporates changes from these two pull requests:
-* [Paragraph alignment, text run font sizes, and HTML output](https://github.com/chrahunt/docx/pull/13) from @higginsdragon
-* [File replacement within document](https://github.com/chrahunt/docx/pull/18) from @tmikoss
+* [Paragraph alignment, text run font sizes, and HTML output](https://github.com/chrahunt/docx/pull/13) from [@higginsdragon](https://github.com/higginsdragon)
+* [File replacement within document](https://github.com/chrahunt/docx/pull/18) from [@tmikoss](https://github.com/tmikoss)
 
 # docx
 
