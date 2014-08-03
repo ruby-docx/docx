@@ -16,7 +16,7 @@ a ruby library/gem for interacting with `.docx` files. currently capabilities in
 
 requires ruby (tested with 2.1.1)
 
-    gem install docx
+    gem 'bitops-docx', '~> 0.2.07'
 
 ### reading
 
@@ -34,6 +34,17 @@ end
 # Retrieve and display bookmarks, returned as hash with bookmark names as keys and objects as values
 doc.bookmarks.each_pair do |bookmark_name, bookmark_object|
   puts bookmark_name
+end
+```
+
+### rendering html
+``` ruby
+require 'docx'
+
+# Retrieve and display paragraphs as html
+doc = Docx::Document.open('example.docx')
+doc.paragraphs.each do |p|
+  puts p.to_html
 end
 ```
 
