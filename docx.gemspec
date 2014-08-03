@@ -2,7 +2,7 @@ $:.unshift File.expand_path("../lib", __FILE__)
 require 'docx/version'
 
 Gem::Specification.new do |s|
-  s.name        = 'docx'
+  s.name        = 'bitops-docx'
   s.version     = Docx::VERSION
   s.summary     = 'a ruby library/gem for interacting with .docx files'
   s.description = s.summary
