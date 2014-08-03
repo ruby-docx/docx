@@ -233,44 +233,44 @@ describe Docx::Document do
     end
 
     it 'should detect centered paragraphs' do
-      @doc.paragraphs[5].aligned_center?.should be_false
-      @doc.paragraphs[6].aligned_center?.should be_true
-      @doc.paragraphs[7].aligned_center?.should be_false
+      expect(@doc.paragraphs[5].aligned_center?).to eq(false)
+      expect(@doc.paragraphs[6].aligned_center?).to eq(true)
+      expect(@doc.paragraphs[7].aligned_center?).to eq(false)
     end
 
     it 'should detect left justified paragraphs' do
-      @doc.paragraphs[6].aligned_left?.should be_false
-      @doc.paragraphs[7].aligned_left?.should be_true
-      @doc.paragraphs[8].aligned_left?.should be_false
+      expect(@doc.paragraphs[6].aligned_left?).to eq(false)
+      expect(@doc.paragraphs[7].aligned_left?).to eq(true)
+      expect(@doc.paragraphs[8].aligned_left?).to eq(false)
     end
 
     it 'should detect right justified paragraphs' do
-      @doc.paragraphs[7].aligned_right?.should be_false
-      @doc.paragraphs[8].aligned_right?.should be_true
-      @doc.paragraphs[9].aligned_right?.should be_false
+      expect(@doc.paragraphs[7].aligned_right?).to eq(false)
+      expect(@doc.paragraphs[8].aligned_right?).to eq(true)
+      expect(@doc.paragraphs[9].aligned_right?).to eq(false)
     end
 
     # ECMA-376 Office Open XML spec (4th edition), 17.3.2.38, size is
     # defined in half-points, meaning 14pt text returns a value of 28.
     # http://www.ecma-international.org/publications/standards/Ecma-376.htm
     it 'should return proper font size for paragraphs' do
-      @doc.font_size.should eq 11
-      @doc.paragraphs[5].font_size.should eq 11
+      expect(@doc.font_size).to eq 11
+      expect(@doc.paragraphs[5].font_size).to eq 11
       paragraph = @doc.paragraphs[9]
-      paragraph.font_size.should eq 14
-      paragraph.text_runs[0].font_size.should eq 14
+      expect(paragraph.font_size).to eq 14
+      expect(paragraph.text_runs[0].font_size).to eq 14
     end
 
     it 'should return proper font size for runs' do
-      @doc.font_size.should eq 11
+      expect(@doc.font_size).to eq 11
       paragraph = @doc.paragraphs[10]
-      paragraph.font_size.should eq 11
+      expect(paragraph.font_size).to eq 11
       text_runs = paragraph.text_runs
-      text_runs[0].font_size.should eq 11
-      text_runs[1].font_size.should eq 16
-      text_runs[2].font_size.should eq 11
-      text_runs[3].font_size.should eq 11
-      text_runs[4].font_size.should eq 11
+      expect(text_runs[0].font_size).to eq 11
+      expect(text_runs[1].font_size).to eq 16
+      expect(text_runs[2].font_size).to eq 11
+      expect(text_runs[3].font_size).to eq 11
+      expect(text_runs[4].font_size).to eq 11
     end
   end
 
@@ -318,77 +318,77 @@ describe Docx::Document do
 
     it 'should wrap pragraphs in a p tag' do
       scan = @doc.paragraphs[0].to_html.scan(@p_regex).flatten
-      scan.first.should eq '<p'
-      scan.last.should eq '</p>'
-      scan[1].should eq 'Normal'
+      expect(scan.first).to eq('<p')
+      expect(scan.last).to eq('</p>')
+      expect(scan[1]).to eq('Normal')
     end
    
     it 'should emphasize italicized text' do
       scan = @doc.paragraphs[1].to_html.scan(@em_regex).flatten
-      scan.first.should eq '<em'
-      scan.last.should eq '</em>'
-      scan[1].should eq 'Italic'
+      expect(scan.first).to eq('<em')
+      expect(scan.last).to eq('</em>')
+      expect(scan[1]).to eq('Italic')
     end
 
     it 'should strong bolded text' do
       scan = @doc.paragraphs[2].to_html.scan(@strong_regex).flatten
-      scan.first.should eq '<strong'
-      scan.last.should eq '</strong>'
-      scan[1].should eq 'Bold'
+      expect(scan.first).to eq '<strong'
+      expect(scan.last).to eq '</strong>'
+      expect(scan[1]).to eq 'Bold'
     end
 
     it 'should underline underlined text' do
       scan = @doc.paragraphs[3].to_html.scan(/\<span\s+([^\>]+)/).flatten
-      scan.first.should eq 'style="text-decoration:underline;"'
+      expect(scan.first).to eq 'style="text-decoration:underline;"'
     end
 
     it 'should justify paragraphs' do
       regex = /^<p[^\"]+.(?<=\")([^\"]+)/
-      @doc.paragraphs[6].to_html.scan(regex).flatten.first.split(';').include?('text-align:center').should be_true
-      @doc.paragraphs[7].to_html.scan(regex).flatten.first.split(';').include?('text-align:left').should be_false
-      @doc.paragraphs[8].to_html.scan(regex).flatten.first.split(';').include?('text-align:right').should be_true
+      expect(@doc.paragraphs[6].to_html.scan(regex).flatten.first.split(';').include?('text-align:center')).to eq(true)
+      expect(@doc.paragraphs[7].to_html.scan(regex).flatten.first.split(';').include?('text-align:left')).to eq(false)
+      expect(@doc.paragraphs[8].to_html.scan(regex).flatten.first.split(';').include?('text-align:right')).to eq(true)
     end
 
     it "should set font size on styled paragraphs" do
       regex = /(\<p{1})[^\>]+style\=\"([^\"]+).+(<\/p>)/      
       scan = @doc.paragraphs[9].to_html.scan(regex).flatten
-      scan.first.should eq '<p'
-      scan.last.should eq '</p>'
-      scan[1].split(';').include?('font-size:14pt').should be_true
+      expect(scan.first).to eq '<p'
+      expect(scan.last).to eq '</p>'
+      expect(scan[1].split(';').include?('font-size:14pt')).to eq(true)
     end
 
     it 'should set font size on styled text runs' do
       regex = /(\<span)[^\>]+style\=\"([^\"]+)[^\<]+(<\/span>)/
       scan = @doc.paragraphs[10].to_html.scan(regex).flatten
-      scan.first.should eq '<span'
-      scan.last.should eq '</span>'
-      scan[1].split(';').include?('font-size:16pt').should be_true
+      expect(scan.first).to eq '<span'
+      expect(scan.last).to eq '</span>'
+      expect(scan[1].split(';').include?('font-size:16pt')).to eq(true)
     end
 
     it 'should properly highlight different text in different places in a sentence' do
       paragraph = @doc.paragraphs[11]
       scan = paragraph.to_html.scan(@em_regex).flatten
-      scan.first.should eq '<em'
-      scan.last.should eq '</em>'
-      scan[1].should eq 'sentence'
+      expect(scan.first).to eq '<em'
+      expect(scan.last).to eq '</em>'
+      expect(scan[1]).to eq 'sentence'
       scan = paragraph.to_html.scan(@strong_regex).flatten
-      scan.first.should eq '<strong'
-      scan.last.should eq '</strong>'
-      scan[1].should eq 'formatting'
+      expect(scan.first).to eq '<strong'
+      expect(scan.last).to eq '</strong>'
+      expect(scan[1]).to eq 'formatting'
       scan = paragraph.to_html.scan(@span_regex).flatten
-      scan.first.should eq '<span'
-      scan.last.should eq '</span>'
-      scan[1].should eq 'different'
+      expect(scan.first).to eq '<span'
+      expect(scan.last).to eq '</span>'
+      expect(scan[1]).to eq 'different'
       scan = paragraph.to_html.scan(/\<span\s+([^\>]+)/).flatten
-      scan.first.should eq 'style="text-decoration:underline;"'
+      expect(scan.first).to eq 'style="text-decoration:underline;"'
     end
 
     it 'should output an entire document as html fragment' do
-      @doc.to_html.scan(/(\<p)/).flatten.size.should eq @formatting_line_count
+      expect(@doc.to_html.scan(/(\<p)/).flatten.size).to eq(@formatting_line_count)
     end
 
     it 'should output styled html' do
-      @formatted_line.to_html.scan('<span style="text-decoration:underline;"><strong><em>all</em></strong></span>').size.should eq 1
+      expect(@formatted_line.to_html.scan('<span style="text-decoration:underline;"><strong><em>all</em></strong></span>').size).to eq 1
     end
 
   end
