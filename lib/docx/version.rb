@@ -1,3 +1,3 @@
 module Docx #:nodoc:
-  VERSION = '0.2.05'
+  VERSION = '0.2.06'
 end
