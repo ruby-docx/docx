@@ -20,12 +20,14 @@ module Docx
         attr_reader :text
         attr_reader :formatting
         
-        def initialize(node)
+        def initialize(node, document_properties = {})
           @node = node
           @text_nodes = @node.xpath('w:t').map {|t_node| Elements::Text.new(t_node) }
           @properties_tag = 'rPr'
           @text       = parse_text || ''
           @formatting = parse_formatting || DEFAULT_FORMATTING
+          @document_properties = document_properties
+          @font_size = @document_properties[:font_size]
         end
 
         # Set text of text run
@@ -54,7 +56,20 @@ module Docx
         def to_s
           @text
         end
-        
+
+        # Return text as a HTML fragment with formatting based on properties.
+        def to_html
+          html = @text
+          html = html_tag(:em, content: html) if italicized?
+          html = html_tag(:strong, content: html) if bolded?
+          styles = {}
+          styles['text-decoration'] = 'underline' if underlined?
+          # No need to be granular with font size down to the span level if it doesn't vary.
+          styles['font-size'] = "#{font_size}pt" if font_size != @font_size 
+          html = html_tag(:span, content: html, styles: styles) unless styles.empty?
+          return html
+        end
+
         def italicized?
           @formatting[:italic]
         end
@@ -65,6 +80,11 @@ module Docx
         
         def underlined?
           @formatting[:underline]
+        end
+
+        def font_size
+          size_tag = @node.xpath('w:rPr//w:sz').first
+          size_tag ? size_tag.attributes['val'].value.to_i / 2 : @font_size
         end
       end
     end
