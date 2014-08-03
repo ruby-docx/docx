@@ -1,3 +1,11 @@
+# This is a fork!!!
+
+This library stands on the shoulders of the original [docx](https://github.com/chrahunt/docx) -- it is my hope that @chrahunt will pull the changes I've incorporated into this library back into his original library.
+
+This library depends on the latest version of rubyzip and incorporates changes from these two pull requests:
+* [Paragraph alignment, text run font sizes, and HTML output](https://github.com/chrahunt/docx/pull/13) from @higginsdragon
+* [File replacement within document](https://github.com/chrahunt/docx/pull/18) from @tmikoss
+
 # docx
 
 a ruby library/gem for interacting with `.docx` files. currently capabilities include reading paragraphs/bookmarks, inserting text at bookmarks, reading tables/rows/columns/cells and saving the document.
@@ -6,7 +14,7 @@ a ruby library/gem for interacting with `.docx` files. currently capabilities in
 
 ### install
 
-requires ruby (only tested with 1.9.3 so far)
+requires ruby (tested with 2.1.1)
 
     gem install docx
 
@@ -99,7 +107,6 @@ p_child = p_element.at_xpath("//child::*") # selects first child
 
 ### todo
 
-* Add better formatting identification for specific nodes and other formatting indicators (text size, paragraph spacing)
 * Calculate element formatting based on values present in element properties as well as properties inherited from parents
 * Default formatting of inserted elements to inherited values
 * Implement formattable elements.
