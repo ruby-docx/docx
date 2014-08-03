@@ -1,7 +1,7 @@
 require 'docx/containers'
 require 'docx/elements'
 require 'nokogiri'
-require 'zip/zip'
+require 'zip'
 
 module Docx
   # The Document class wraps around a docx file and provides methods to
@@ -22,7 +22,7 @@ module Docx
     
     def initialize(path, &block)
       @replace = {}
-      @zip = Zip::ZipFile.open(path)
+      @zip = Zip::File.open(path)
       @document_xml = @zip.read('word/document.xml')
       @doc = Nokogiri::XML(@document_xml)
       @styles_xml = @zip.read('word/styles.xml')
