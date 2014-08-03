@@ -167,7 +167,7 @@ describe Docx::Document do
     end
 
     it 'should have the correct text' do
-      expect(@doc.paragraphs.size).to eq(6)
+      expect(@doc.paragraphs.size).to eq(@formatting_line_count)
       expect(@doc.paragraphs[0].text).to eq('Normal')
       expect(@doc.paragraphs[1].text).to eq('Italic')
       expect(@doc.paragraphs[2].text).to eq('Bold')
