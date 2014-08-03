@@ -6,13 +6,13 @@ require 'zip'
 module Docx
   # The Document class wraps around a docx file and provides methods to
   # interface with it.
-  # 
+  #
   #   # get a Docx::Document for a docx file in the local directory
   #   doc = Docx::Document.open("test.docx")
-  #   
+  #
   #   # get the text from the document
   #   puts doc.text
-  #   
+  #
   #   # do the same thing in a block
   #   Docx::Document.open("test.docx") do |d|
   #     puts d.text
@@ -33,12 +33,14 @@ module Docx
       end
     end
 
+
     # This stores the current global document properties, for now
     def document_properties
       {
         font_size: font_size
       }
     end
+
 
     # With no associated block, Docx::Document.open is a synonym for Docx::Document.new. If the optional code block is given, it will be passed the opened +docx+ file as an argument and the Docx::Document oject will automatically be closed when the block terminates. The values of the block will be returned from Docx::Document.open.
     # call-seq:
@@ -74,14 +76,14 @@ module Docx
 
     ##
     # *Deprecated*
-    # 
+    #
     # Iterates over paragraphs within document
     # call-seq:
     #   each_paragraph => Enumerator
     def each_paragraph
       paragraphs.each { |p| yield(p) }
     end
-    
+
     # call-seq:
     #   to_s -> string
     def to_s
@@ -111,18 +113,22 @@ module Docx
       end
       zip.close
     end
-    
+
     alias_method :text, :to_s
+
+    def replace_entry(entry_path, file_contents)
+      @replace[entry_path] = file_contents
+    end
 
     private
 
     #--
     # TODO: Flesh this out to be compatible with other files
-    # TODO: Method to set flag on files that have been edited, probably by inserting something at the 
+    # TODO: Method to set flag on files that have been edited, probably by inserting something at the
     # end of methods that make edits?
     #++
     def update
-      @replace["word/document.xml"] = doc.serialize :save_with => 0
+      replace_entry "word/document.xml", doc.serialize(:save_with => 0)
     end
 
     # generate Elements::Containers::Paragraph from paragraph XML node
