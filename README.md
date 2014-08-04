@@ -16,7 +16,7 @@ a ruby library/gem for interacting with `.docx` files. currently capabilities in
 
 requires ruby (tested with 2.1.1)
 
-    gem 'bitops-docx', '~> 0.2.07'
+    gem 'bitops-docx', '~> 0.2.07', :require => ["docx"]
 
 ### reading
 
