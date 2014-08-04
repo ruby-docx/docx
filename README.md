@@ -1,4 +1,4 @@
-# This is a :fork:
+# This is a :fork_and_knife:
 
 This library stands on the shoulders of the original [docx](https://github.com/chrahunt/docx) -- it is my hope that [@chrahunt](https://github.com/chrahunt) will pull the changes I've incorporated into this library back into his original library.
 
