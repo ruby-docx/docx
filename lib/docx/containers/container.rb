@@ -14,6 +14,10 @@ module Docx
         def blank!
           @node.xpath(".//w:t").each {|t| t.content = '' }
         end
+
+        def remove!
+          @node.remove
+        end
       end
     end
   end
