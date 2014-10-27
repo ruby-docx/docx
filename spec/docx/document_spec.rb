@@ -152,6 +152,11 @@ describe Docx::Document do
       @doc.paragraphs.first.blank!
       @doc.paragraphs.first.text.should eq ''
     end
+
+    it 'should allow content deletion' do
+      expect{@doc.paragraphs.first.remove!}.to change{@doc.paragraphs.size}.by(-1)
+
+    end
   end
 
   describe 'read formatting' do
