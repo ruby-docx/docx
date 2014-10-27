@@ -16,8 +16,8 @@ module Docx
   #     puts d.text
   #   end
   class Document
-    delegate :paragraphs, :bookmarks, :tables, :to => :@parser
-    delegate :doc, :xml, :zip, :to => :@parser
+    delegate :paragraphs, :bookmarks, :tables, :header, :to => :@parser
+    delegate :doc, :xml, :zip, :doc_header, :doc_footer, :to => :@parser
     def initialize(path, &block)
       @replace = {}
       if block_given?

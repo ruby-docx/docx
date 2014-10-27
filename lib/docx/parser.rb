@@ -5,11 +5,13 @@ require 'zip'
 
 module Docx
   class Parser
-    attr_reader :xml, :doc, :zip
+    attr_reader :xml, :doc, :zip, :doc_header, :doc_footer
     
     def initialize(path)
       @zip = Zip::File.open(path)
       @xml = @zip.read('word/document.xml')
+      @doc_header = Nokogiri::XML @zip.read('word/header1.xml')
+      @doc_footer = Nokogiri::XML @zip.read('word/footer1.xml')
       @doc = Nokogiri::XML(@xml)
       if block_given?
         yield self
@@ -33,6 +35,10 @@ module Docx
 
     def tables
       @doc.xpath('//w:document//w:body//w:tbl').map { |t_node| parse_table_from t_node }
+    end
+
+    def header
+      Elements::Containers::Header.new(@doc_header.xpath('w:hdr'))
     end
     
     private
