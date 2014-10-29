@@ -1,24 +1,16 @@
-# This is a :fork_and_knife:
-
-This library stands on the shoulders of the original [docx](https://github.com/chrahunt/docx) -- it is my hope that [@chrahunt](https://github.com/chrahunt) will pull the changes I've incorporated into this library back into his original library.
-
-This library depends on the latest version of rubyzip and incorporates changes from these two pull requests:
-* [Paragraph alignment, text run font sizes, and HTML output](https://github.com/chrahunt/docx/pull/13) from [@higginsdragon](https://github.com/higginsdragon)
-* [File replacement within document](https://github.com/chrahunt/docx/pull/18) from [@tmikoss](https://github.com/tmikoss)
-
 # docx
 
-a ruby library/gem for interacting with `.docx` files. currently capabilities include reading paragraphs/bookmarks, inserting text at bookmarks, reading tables/rows/columns/cells and saving the document.
+A ruby library/gem for interacting with `.docx` files. currently capabilities include reading paragraphs/bookmarks, inserting text at bookmarks, reading tables/rows/columns/cells and saving the document.
 
-## usage
+## Usage
 
-### install
+### Install
 
-requires ruby (tested with 2.1.1)
+Requires ruby (tested with 2.1.1)
 
-    gem 'bitops-docx', '~> 0.2.07', :require => ["docx"]
+    gem 'docx', '~> 0.2.07', :require => ["docx"]
 
-### reading
+### Reading
 
 ``` ruby
 require 'docx'
@@ -37,7 +29,7 @@ doc.bookmarks.each_pair do |bookmark_name, bookmark_object|
 end
 ```
 
-### rendering html
+### Rendering html
 ``` ruby
 require 'docx'
 
@@ -48,7 +40,7 @@ doc.paragraphs.each do |p|
 end
 ```
 
-### reading tables
+### Reading tables
 
 ``` ruby
 require 'docx'
@@ -78,7 +70,7 @@ doc.tables.each do |table|
 end
 ```
 
-### writing
+### Writing
 
 ``` ruby
 require 'docx'
@@ -96,7 +88,7 @@ doc.bookmarks['example_bookmark_2'].insert_multiple_lines_after(['Hello', 'World
 doc.save('example-edited.docx')
 ```
 
-### advanced
+### Advanced
 
 ``` ruby
 require 'docx'
