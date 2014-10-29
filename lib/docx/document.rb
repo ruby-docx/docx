@@ -83,6 +83,8 @@ module Docx
       @replace["word/document.xml"] = doc.serialize :save_with => 0
       @replace["word/header1.xml"] = self.header.node.first.serialize :save_with => 0 if self.header
       @replace["word/footer1.xml"] = self.footer.node.first.serialize :save_with => 0 if self.footer
+
+      #@doc.xpath('//w:document//w:body//w:tbl//w:tr')[2].remove
     end
 
   end
