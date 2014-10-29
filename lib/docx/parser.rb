@@ -9,10 +9,12 @@ module Docx
     
     def initialize(path)
       @zip = Zip::File.open(path)
+      file_names = @zip.map(&:name)
       @xml = @zip.read('word/document.xml')
-      @doc_header = Nokogiri::XML @zip.read('word/header1.xml')
-      @doc_footer = Nokogiri::XML @zip.read('word/footer1.xml')
+      @doc_header = Nokogiri::XML @zip.read('word/header1.xml') if file_names.include?('word/header1.xml')
+      @doc_footer = Nokogiri::XML @zip.read('word/footer1.xml') if file_names.include?('word/footer1.xml')
       @doc = Nokogiri::XML(@xml)
+      binding.pry
       if block_given?
         yield self
         @zip.close
@@ -20,7 +22,7 @@ module Docx
     end
     
     def paragraphs
-      @doc.xpath('//w:document//w:body//w:p').map { |p_node| parse_paragraph_from p_node }
+      @doc.xpath('//w:document//w:body//w:p').map{ |p_node| parse_paragraph_from p_node }
     end
 
     # Returns hash of bookmarks
@@ -39,6 +41,10 @@ module Docx
 
     def header
       Elements::Containers::Header.new(@doc_header.xpath('w:hdr'))
+    end
+
+    def footer
+      Elements::Containers::Footer.new(@doc_footer.xpath('w:ftr'))
     end
     
     private

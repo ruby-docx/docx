@@ -16,7 +16,7 @@ module Docx
   #     puts d.text
   #   end
   class Document
-    delegate :paragraphs, :bookmarks, :tables, :header, :to => :@parser
+    delegate :paragraphs, :bookmarks, :tables, :header, :footer, :to => :@parser
     delegate :doc, :xml, :zip, :doc_header, :doc_footer, :to => :@parser
     def initialize(path, &block)
       @replace = {}
@@ -81,6 +81,8 @@ module Docx
     #++
     def update
       @replace["word/document.xml"] = doc.serialize :save_with => 0
+      @replace["word/header1.xml"] = self.header.node.first.serialize :save_with => 0 if self.header
+      @replace["word/footer1.xml"] = self.footer.node.first.serialize :save_with => 0 if self.footer
     end
 
   end
