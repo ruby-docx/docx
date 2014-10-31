@@ -14,7 +14,6 @@ module Docx
       @doc_header = Nokogiri::XML @zip.read('word/header1.xml') if file_names.include?('word/header1.xml')
       @doc_footer = Nokogiri::XML @zip.read('word/footer1.xml') if file_names.include?('word/footer1.xml')
       @doc = Nokogiri::XML(@xml)
-      binding.pry
       if block_given?
         yield self
         @zip.close
@@ -40,11 +39,19 @@ module Docx
     end
 
     def header
-      Elements::Containers::Header.new(@doc_header.xpath('w:hdr'))
+      Elements::Containers::Header.new(@doc_header.xpath('w:hdr')) if @doc_header
     end
 
     def footer
-      Elements::Containers::Footer.new(@doc_footer.xpath('w:ftr'))
+      Elements::Containers::Footer.new(@doc_footer.xpath('w:ftr')) if @doc_footer
+    end
+
+    def remove_unneeded_rows
+      xml_rows = @doc.xpath('//w:document').xpath('//w:body').xpath('//w:tr')
+      rows = xml_rows.map{|row| Docx::Elements::Containers::TableRow.new(row)}
+      result = rows.map{ |r| r.cells.map(&:paragraphs).flatten.map(&:text).include?("@@cell_to_delete") }
+      pos = result.index(true)
+      @doc.xpath('//w:document//w:body//w:tbl//w:tr')[pos].remove if pos
     end
     
     private
