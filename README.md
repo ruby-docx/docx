@@ -1,16 +1,16 @@
 # docx
 
-a ruby library/gem for interacting with `.docx` files. currently capabilities include reading paragraphs/bookmarks, inserting text at bookmarks, reading tables/rows/columns/cells and saving the document.
+A ruby library/gem for interacting with `.docx` files. currently capabilities include reading paragraphs/bookmarks, inserting text at bookmarks, reading tables/rows/columns/cells and saving the document.
 
-## usage
+## Usage
 
-### install
+### Install
 
-requires ruby (only tested with 1.9.3 so far)
+Requires ruby (tested with 2.1.1)
 
-    gem install docx
+    gem 'docx', '~> 0.2.07', :require => ["docx"]
 
-### reading
+### Reading
 
 ``` ruby
 require 'docx'
@@ -29,7 +29,18 @@ doc.bookmarks.each_pair do |bookmark_name, bookmark_object|
 end
 ```
 
-### reading tables
+### Rendering html
+``` ruby
+require 'docx'
+
+# Retrieve and display paragraphs as html
+doc = Docx::Document.open('example.docx')
+doc.paragraphs.each do |p|
+  puts p.to_html
+end
+```
+
+### Reading tables
 
 ``` ruby
 require 'docx'
@@ -59,7 +70,7 @@ doc.tables.each do |table|
 end
 ```
 
-### writing
+### Writing
 
 ``` ruby
 require 'docx'
@@ -77,7 +88,7 @@ doc.bookmarks['example_bookmark_2'].insert_multiple_lines_after(['Hello', 'World
 doc.save('example-edited.docx')
 ```
 
-### advanced
+### Advanced
 
 ``` ruby
 require 'docx'
@@ -99,7 +110,6 @@ p_child = p_element.at_xpath("//child::*") # selects first child
 
 ### todo
 
-* Add better formatting identification for specific nodes and other formatting indicators (text size, paragraph spacing)
 * Calculate element formatting based on values present in element properties as well as properties inherited from parents
 * Default formatting of inserted elements to inherited values
 * Implement formattable elements.
