@@ -422,5 +422,36 @@ describe Docx::Document do
       end
     end
   end
+
+  describe 'headers' do
+    before do
+      @doc = Docx::Document.open(@fixtures_path + '/headers.docx')
+    end
+
+    it 'should read the document' do
+      expect(@doc.headers.size).to eq(3)
+    end
+
+    it 'should read bookmarks' do
+      expect(@doc.bookmarks.size).to eq(2)
+      expect(@doc.bookmarks['header_bookmark']).to_not eq(nil)
+    end
+
+    it 'should be able to make changes in a header bookmark' do
+      @doc.bookmarks['header_bookmark'].insert_text_after('testing')
+      expect(@doc.headers['word/header2.xml'].to_html).to include('testing')
+    end
+
+    it 'should save changes in a header bookmark' do
+      @doc.bookmarks['header_bookmark'].insert_text_after('testing')
+      expect(@doc.headers['word/header2.xml'].to_html).to include('testing')
+
+      @new_doc_path = @fixtures_path + '/new_save.docx'
+      @doc.save(@new_doc_path)
+      @new_doc = Docx::Document.open(@new_doc_path)
+      expect(@doc.headers['word/header2.xml'].to_html).to include('testing')
+      File.exists?(@new_doc_path) if File.delete(@new_doc_path)
+    end
+  end
 end
 
