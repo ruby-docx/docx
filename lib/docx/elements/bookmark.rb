@@ -5,7 +5,7 @@ module Docx
     class Bookmark
       include Element
       attr_accessor :name
-      
+
       def self.tag
         'bookmarkStart'
       end
@@ -15,20 +15,20 @@ module Docx
         @name = @node['w:name']
       end
 
-      # Insert text before bookmarkStart node
-      def insert_text_before(text)
+      # Insert text before bookmarkStart node with optional formatting
+      def insert_text_before(text, formatting={})
         text_run = get_run_after
-        text_run.text = "#{text}#{text_run.text}"
+        text_run.set_text("#{text}#{text_run.text}", formatting)
       end
 
-      # Insert text after bookmarkStart node
-      def insert_text_after(text)
+      # Insert text after bookmarkStart node with optional formatting
+      def insert_text_after(text, formatting={})
         text_run = get_run_before
-        text_run.text = "#{text_run.text}#{text}"
+        text_run.set_text("#{text_run.text}#{text}", formatting)
       end
 
-      # insert multiple lines starting with paragraph containing bookmark node.
-      def insert_multiple_lines(text_array)
+      # insert multiple lines starting with paragraph containing bookmark node. With optional formatting
+      def insert_multiple_lines(text_array, formatting={})
         # Hold paragraphs to be inserted into, corresponding to the index of the strings in the text array
         paragraphs = []
         paragraph = self.parent_paragraph
@@ -45,13 +45,13 @@ module Docx
 
         # Insert text into corresponding newly created paragraphs
         paragraphs.each_index do |index|
-          paragraphs[index].text = text_array[index]
+          paragraphs[index].set_text(text_array[index], formatting)
         end
       end
 
       # Get text run immediately prior to bookmark node
       def get_run_before
-        # at_xpath returns the first match found and preceding-sibling returns siblings in the 
+        # at_xpath returns the first match found and preceding-sibling returns siblings in the
         # order they appear in the document not the order as they appear when moving out from
         # the starting node
         if not (r_nodes = @node.xpath("./preceding-sibling::w:r")).empty?

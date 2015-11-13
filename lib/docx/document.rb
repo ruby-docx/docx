@@ -37,7 +37,8 @@ module Docx
     # This stores the current global document properties, for now
     def document_properties
       {
-        font_size: font_size
+        font_size: font_size,
+        font: font
       }
     end
 
@@ -74,6 +75,10 @@ module Docx
       size_tag ? size_tag.attributes['val'].value.to_i / 2 : nil
     end
 
+    def font
+      font_tag = @styles.at_xpath('//w:docDefaults//w:rPrDefault//w:rPr//w:rFonts')
+      font_tag ? font_tag['w:ascii'] : nil
+    end
     ##
     # *Deprecated*
     #

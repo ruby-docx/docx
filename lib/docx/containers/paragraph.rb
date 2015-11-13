@@ -1,5 +1,6 @@
 require 'docx/containers/text_run'
 require 'docx/containers/container'
+require 'docx/formatting/paragraph_formatting'
 
 module Docx
   module Elements
@@ -7,11 +8,14 @@ module Docx
       class Paragraph
         include Container
         include Elements::Element
+        include ParagraphFormatting
 
         def self.tag
           'p'
         end
 
+        attr_reader :properties_tag
+        alias_method :formatting, :parse_formatting
 
         # Child elements: pPr, r, fldSimple, hlink, subDoc
         # http://msdn.microsoft.com/en-us/library/office/ee364458(v=office.11).aspx
@@ -34,6 +38,12 @@ module Docx
             new_r = TextRun.create_within(self)
             new_r.text = content
           end
+        end
+
+        # Set text of paragraph with formatting
+        def set_text(content, formatting={})
+          self.text = content
+          text_runs.each { |tr| tr.apply_formatting(formatting) }
         end
 
         # Return text of paragraph
@@ -79,17 +89,15 @@ module Docx
           size_tag = @node.xpath('w:pPr//w:sz').first
           size_tag ? size_tag.attributes['val'].value.to_i / 2 : @font_size
         end
-        
+
         alias_method :text, :to_s
 
         private
 
         # Returns the alignment if any, or nil if left
         def alignment
-          alignment_tag = @node.xpath('.//w:jc').first
-          alignment_tag ? alignment_tag.attributes['val'].value : nil
+          formatting[:alignment]
         end
-
       end
     end
   end
