@@ -5,7 +5,7 @@ require 'tempfile'
 describe Docx::Document do
   before(:all) do
     @fixtures_path = "spec/fixtures"
-    @formatting_line_count = 12 # number of lines the formatting.docx file has
+    @formatting_line_count = 14 # number of lines the formatting.docx file has
   end
 
   describe 'reading' do
@@ -35,7 +35,7 @@ describe Docx::Document do
       @doc.each_paragraph do |p|
         p.each_text_run do |tr|
           expect(tr).to be_an_instance_of(Docx::Elements::Containers::TextRun)
-          expect(tr.formatting).to eq(Docx::Elements::Containers::TextRun::DEFAULT_FORMATTING)
+          expect(tr.formatting).to eq(Docx::TextRunFormatting.default_formatting(@doc.document_properties))
         end
       end
     end
@@ -160,11 +160,58 @@ describe Docx::Document do
     end
   end
 
+  describe 'editing with formatting' do
+    before do
+      @doc = Docx::Document.open(@fixtures_path + '/editing.docx')
+      @formatting = {  italic: false, underline: false, bold: true, font: 'Times New Roman', font_size: 20, color: 'FF0000' }
+      @default_formatting = Docx::TextRunFormatting::default_formatting(@doc.document_properties)
+    end
+
+    it 'allows insertion of text before a bookmark with formatting' do
+      expect(@doc.paragraphs.first.text).to eq('test text')
+      @doc.bookmarks['beginning_bookmark'].insert_text_before('foo', @formatting)
+      expect(@doc.paragraphs.first.text).to eq('footest text')
+      text_runs = @doc.paragraphs.first.text_runs
+      expect(text_runs[0].text).to eq('footest')
+      expect(text_runs[0].formatting).to eq @formatting
+      expect(text_runs[1].text).to eq(' text')
+      expect(text_runs[1].formatting).to eq @default_formatting
+    end
+
+    it 'allows insertion of text after a bookmark with formatting' do
+      expect(@doc.paragraphs.first.text).to eq('test text')
+      @doc.bookmarks['end_bookmark'].insert_text_after('bar', @formatting)
+      expect(@doc.paragraphs.first.text).to eq('test textbar')
+      text_runs = @doc.paragraphs.first.text_runs
+      expect(text_runs[0].text).to eq('test')
+      expect(text_runs[0].formatting).to eq @default_formatting
+      expect(text_runs[1].text).to eq(' textbar')
+      expect(text_runs[1].formatting).to eq @formatting
+    end
+
+    it 'should allow multiple lines of text to be inserted at a bookmark with formatting' do
+      expect(@doc.paragraphs.last.text).to eq('')
+      new_lines = ['replacement test', 'second paragraph test', 'and a third paragraph test']
+      @doc.bookmarks['isolated_bookmark'].insert_multiple_lines(new_lines, @formatting)
+      new_lines.each_index do |line|
+        expect(@doc.paragraphs[line + 2].text).to eq(new_lines[line])
+        text_run = @doc.paragraphs[line + 2].text_runs.first
+        expect(text_run.formatting).to eq(@formatting)
+      end
+    end
+
+    it 'should allow paragraphs to be aligned' do
+      expect(@doc.paragraphs[0].formatting).to eq(alignment: nil)
+      @doc.paragraphs[0].apply_formatting(alignment: 'center')
+      expect(@doc.paragraphs[0].formatting).to eq(alignment: 'center')
+    end
+  end
+
   describe 'read formatting' do
     before do
       @doc = Docx::Document.open(@fixtures_path + '/formatting.docx')
       @formatting = @doc.paragraphs.map { |p| p.text_runs.map(&:formatting) }
-      @default_formatting = Docx::Elements::Containers::TextRun::DEFAULT_FORMATTING
+      @default_formatting = Docx::TextRunFormatting::default_formatting(@doc.document_properties)
       @only_italic = @default_formatting.merge italic: true
       @only_bold = @default_formatting.merge bold: true
       @only_underline = @default_formatting.merge underline: true
@@ -184,57 +231,67 @@ describe Docx::Document do
       expect(@doc.paragraphs[8].text).to eq('This paragraph is aligned right.')
       expect(@doc.paragraphs[9].text).to eq('This paragraph is 14 points.')
       expect(@doc.paragraphs[10].text).to eq('This paragraph has a word at 16 points.')
+      expect(@doc.paragraphs[11].text).to eq('This sentence has different formatting in different places.')
+      expect(@doc.paragraphs[12].text).to eq('This sentence uses the Times New Roman font.')
+      expect(@doc.paragraphs[13].text).to eq('This sentence is red. ')
     end
 
     it 'should contain a paragraph with multiple text runs' do
-
+      expect(@doc.paragraphs.any? { |p| p.text_runs.length <= 2 }).to eq(true)
     end
 
     it 'should detect normal formatting' do
       [0, 4].each do |i|
         expect(@formatting[i][0]).to eq(@default_formatting)
-        expect(@doc.paragraphs[i].text_runs[0].italicized?).to eq(false)
-        expect(@doc.paragraphs[i].text_runs[0].bolded?).to eq(false)
-        expect(@doc.paragraphs[i].text_runs[0].underlined?).to eq(false)
+        text_run_formatting = @doc.paragraphs[i].text_runs[0].formatting
+        expect(text_run_formatting[:italic]).to eq(false)
+        expect(text_run_formatting[:bold]).to eq(false)
+        expect(text_run_formatting[:underline]).to eq(false)
       end
     end
 
     it 'should detect italic formatting' do
       expect(@formatting[1][0]).to eq(@only_italic)
-      expect(@doc.paragraphs[1].text_runs[0].italicized?).to eq(true)
-      expect(@doc.paragraphs[1].text_runs[0].bolded?).to eq(false)
-      expect(@doc.paragraphs[1].text_runs[0].underlined?).to eq(false)
+      text_run_formatting = @doc.paragraphs[1].text_runs[0].formatting
+      expect(text_run_formatting[:italic]).to eq(true)
+      expect(text_run_formatting[:bold]).to eq(false)
+      expect(text_run_formatting[:underline]).to eq(false)
     end
 
     it 'should detect bold formatting' do
       expect(@formatting[2][0]).to eq(@only_bold)
-      expect(@doc.paragraphs[2].text_runs[0].italicized?).to eq(false)
-      expect(@doc.paragraphs[2].text_runs[0].bolded?).to eq(true)
-      expect(@doc.paragraphs[2].text_runs[0].underlined?).to eq(false)
+      text_run_formatting = @doc.paragraphs[2].text_runs[0].formatting
+      expect(text_run_formatting[:italic]).to eq(false)
+      expect(text_run_formatting[:bold]).to eq(true)
+      expect(text_run_formatting[:underline]).to eq(false)
     end
 
     it 'should detect underline formatting' do
       expect(@formatting[3][0]).to eq(@only_underline)
-      expect(@doc.paragraphs[3].text_runs[0].italicized?).to eq(false)
-      expect(@doc.paragraphs[3].text_runs[0].bolded?).to eq(false)
-      expect(@doc.paragraphs[3].text_runs[0].underlined?).to eq(true)
+      text_run_formatting = @doc.paragraphs[3].text_runs[0].formatting
+      expect(text_run_formatting[:italic]).to eq(false)
+      expect(text_run_formatting[:bold]).to eq(false)
+      expect(text_run_formatting[:underline]).to eq(true)
     end
 
     it 'should detect mixed formatting' do
       expect(@formatting[5][0]).to eq(@default_formatting)
-      expect(@doc.paragraphs[5].text_runs[0].italicized?).to eq(false)
-      expect(@doc.paragraphs[5].text_runs[0].bolded?).to eq(false)
-      expect(@doc.paragraphs[5].text_runs[0].underlined?).to eq(false)
-      
+      text_run_formatting = @doc.paragraphs[5].text_runs[0].formatting
+      expect(text_run_formatting[:italic]).to eq(false)
+      expect(text_run_formatting[:bold]).to eq(false)
+      expect(text_run_formatting[:underline]).to eq(false)
+
       expect(@formatting[5][1]).to eq(@all_formatted)
-      expect(@doc.paragraphs[5].text_runs[1].italicized?).to eq(true)
-      expect(@doc.paragraphs[5].text_runs[1].bolded?).to eq(true)
-      expect(@doc.paragraphs[5].text_runs[1].underlined?).to eq(true)
-      
+      text_run_formatting = @doc.paragraphs[5].text_runs[1].formatting
+      expect(text_run_formatting[:italic]).to eq(true)
+      expect(text_run_formatting[:bold]).to eq(true)
+      expect(text_run_formatting[:underline]).to eq(true)
+
       expect(@formatting[5][2]).to eq(@default_formatting)
-      expect(@doc.paragraphs[5].text_runs[2].italicized?).to eq(false)
-      expect(@doc.paragraphs[5].text_runs[2].bolded?).to eq(false)
-      expect(@doc.paragraphs[5].text_runs[2].underlined?).to eq(false)
+      text_run_formatting = @doc.paragraphs[5].text_runs[2].formatting
+      expect(text_run_formatting[:italic]).to eq(false)
+      expect(text_run_formatting[:bold]).to eq(false)
+      expect(text_run_formatting[:underline]).to eq(false)
     end
 
     it 'should detect centered paragraphs' do
@@ -255,27 +312,25 @@ describe Docx::Document do
       expect(@doc.paragraphs[9].aligned_right?).to eq(false)
     end
 
-    # ECMA-376 Office Open XML spec (4th edition), 17.3.2.38, size is
-    # defined in half-points, meaning 14pt text returns a value of 28.
-    # http://www.ecma-international.org/publications/standards/Ecma-376.htm
-    it 'should return proper font size for paragraphs' do
-      expect(@doc.font_size).to eq 11
-      expect(@doc.paragraphs[5].font_size).to eq 11
-      paragraph = @doc.paragraphs[9]
-      expect(paragraph.font_size).to eq 14
-      expect(paragraph.text_runs[0].font_size).to eq 14
+    it 'should return proper font size for runs' do
+      expect(@doc.document_properties[:font_size]).to eq 11
+      text_runs = @doc.paragraphs[10].text_runs
+      expect(text_runs[0].formatting[:font_size]).to eq 11
+      expect(text_runs[1].formatting[:font_size]).to eq 16
+      expect(text_runs[2].formatting[:font_size]).to eq 11
+      expect(text_runs[3].formatting[:font_size]).to eq 11
+      expect(text_runs[4].formatting[:font_size]).to eq 11
     end
 
-    it 'should return proper font size for runs' do
-      expect(@doc.font_size).to eq 11
-      paragraph = @doc.paragraphs[10]
-      expect(paragraph.font_size).to eq 11
-      text_runs = paragraph.text_runs
-      expect(text_runs[0].font_size).to eq 11
-      expect(text_runs[1].font_size).to eq 16
-      expect(text_runs[2].font_size).to eq 11
-      expect(text_runs[3].font_size).to eq 11
-      expect(text_runs[4].font_size).to eq 11
+    it 'should detect font for a textrun' do
+      expect(@doc.document_properties[:font]).to eq(nil)
+      textrun = @doc.paragraphs[12].text_runs.first
+      expect(textrun.formatting[:font]).to eq('Times New Roman')
+    end
+
+    it 'should detect the color of text in a textrun' do
+      textrun = @doc.paragraphs[13].text_runs.first
+      expect(textrun.formatting[:color]).to eq('FF0000')
     end
   end
 
@@ -327,7 +382,7 @@ describe Docx::Document do
       expect(scan.last).to eq('</p>')
       expect(scan[1]).to eq('Normal')
     end
-   
+
     it 'should emphasize italicized text' do
       scan = @doc.paragraphs[1].to_html.scan(@em_regex).flatten
       expect(scan.first).to eq('<em')
@@ -355,7 +410,7 @@ describe Docx::Document do
     end
 
     it "should set font size on styled paragraphs" do
-      regex = /(\<p{1})[^\>]+style\=\"([^\"]+).+(<\/p>)/      
+      regex = /(\<p{1})[^\>]+style\=\"([^\"]+).+(<\/p>)/
       scan = @doc.paragraphs[9].to_html.scan(regex).flatten
       expect(scan.first).to eq '<p'
       expect(scan.last).to eq '</p>'
@@ -368,6 +423,22 @@ describe Docx::Document do
       expect(scan.first).to eq '<span'
       expect(scan.last).to eq '</span>'
       expect(scan[1].split(';').include?('font-size:16pt')).to eq(true)
+    end
+
+    it 'should set font on styled text runs' do
+      regex = /(\<span)[^\>]+style\=\"([^\;]+)[^\<]+(<\/span>)/
+      scan = @doc.paragraphs[12].to_html.scan(regex).flatten
+      expect(scan.first).to eq '<span'
+      expect(scan.last).to eq '</span>'
+      expect(scan[1].split(';').include?('font-family:"Times New Roman"')).to eq(true)
+    end
+
+    it 'should set font color on styled text runs' do
+      regex = /(\<span)[^\>]+style\=\"([^\"]+)[^\<]+(<\/span>)/
+      scan = @doc.paragraphs[13].to_html.scan(regex).flatten
+      expect(scan.first).to eq '<span'
+      expect(scan.last).to eq '</span>'
+      expect(scan[1].split(';').include?('color:#FF0000')).to eq(true)
     end
 
     it 'should properly highlight different text in different places in a sentence' do
@@ -423,4 +494,3 @@ describe Docx::Document do
     end
   end
 end
-
