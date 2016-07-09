@@ -225,12 +225,12 @@ describe Docx::Document do
       expect(@doc.paragraphs[5].text_runs[0].italicized?).to eq(false)
       expect(@doc.paragraphs[5].text_runs[0].bolded?).to eq(false)
       expect(@doc.paragraphs[5].text_runs[0].underlined?).to eq(false)
-      
+
       expect(@formatting[5][1]).to eq(@all_formatted)
       expect(@doc.paragraphs[5].text_runs[1].italicized?).to eq(true)
       expect(@doc.paragraphs[5].text_runs[1].bolded?).to eq(true)
       expect(@doc.paragraphs[5].text_runs[1].underlined?).to eq(true)
-      
+
       expect(@formatting[5][2]).to eq(@default_formatting)
       expect(@doc.paragraphs[5].text_runs[2].italicized?).to eq(false)
       expect(@doc.paragraphs[5].text_runs[2].bolded?).to eq(false)
@@ -309,6 +309,16 @@ describe Docx::Document do
         File.delete(@new_doc_path)
       end
     end
+
+    context 'wps modified docx file' do
+      before { @doc = Docx::Document.open(@fixtures_path + '/saving_wps.docx') }
+      it 'should save to a normal file path' do
+        @new_doc_path = @fixtures_path + '/new_save.docx'
+        @doc.save(@new_doc_path)
+        @new_doc = Docx::Document.open(@new_doc_path)
+        expect(@new_doc.paragraphs.size).to eq(@doc.paragraphs.size)
+      end
+    end
   end
 
   describe 'outputting html' do
@@ -327,7 +337,7 @@ describe Docx::Document do
       expect(scan.last).to eq('</p>')
       expect(scan[1]).to eq('Normal')
     end
-   
+
     it 'should emphasize italicized text' do
       scan = @doc.paragraphs[1].to_html.scan(@em_regex).flatten
       expect(scan.first).to eq('<em')
@@ -355,7 +365,7 @@ describe Docx::Document do
     end
 
     it "should set font size on styled paragraphs" do
-      regex = /(\<p{1})[^\>]+style\=\"([^\"]+).+(<\/p>)/      
+      regex = /(\<p{1})[^\>]+style\=\"([^\"]+).+(<\/p>)/
       scan = @doc.paragraphs[9].to_html.scan(regex).flatten
       expect(scan.first).to eq '<p'
       expect(scan.last).to eq '</p>'

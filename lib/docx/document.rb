@@ -19,7 +19,7 @@ module Docx
   #   end
   class Document
     attr_reader :xml, :doc, :zip, :styles
-    
+
     def initialize(path, &block)
       @replace = {}
       @zip = Zip::File.open(path)
@@ -102,6 +102,7 @@ module Docx
       update
       Zip::OutputStream.open(path) do |out|
         zip.each do |entry|
+          next unless entry.file?
           out.put_next_entry(entry.name)
 
           if @replace[entry.name]
