@@ -17,13 +17,13 @@ module Docx
 
       # Insert text before bookmarkStart node
       def insert_text_before(text)
-        text_run = get_run_after
+        text_run = get_run_before
         text_run.text = "#{text}#{text_run.text}"
       end
 
       # Insert text after bookmarkStart node
       def insert_text_after(text)
-        text_run = get_run_before
+        text_run = get_run_after
         text_run.text = "#{text_run.text}#{text}"
       end
 
