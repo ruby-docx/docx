@@ -18,12 +18,25 @@ module Docx
   #     puts d.text
   #   end
   class Document
-    attr_reader :xml, :doc, :zip, :styles
+    attr_reader :xml, :doc, :zip, :styles, :header, :footer
     
     def initialize(path, &block)
       @replace = {}
       @zip = Zip::File.open(path)
       @document_xml = @zip.read('word/document.xml')
+      header_path = 'word/header1.xml'
+      footer_path = 'word/footer1.xml'
+
+      if @zip.find_entry(header_path)
+        @header_xml = @zip.read(header_path) 
+        @header = Nokogiri::XML(@header_xml)
+      end
+
+      if @zip.find_entry(footer_path)
+        @footer_xml = @zip.read(footer_path)
+        @footer = Nokogiri::XML(@footer_xml)
+      end
+      
       @doc = Nokogiri::XML(@document_xml)
       @styles_xml = @zip.read('word/styles.xml')
       @styles = Nokogiri::XML(@styles_xml)
@@ -103,7 +116,7 @@ module Docx
       Zip::OutputStream.open(path) do |out|
         zip.each do |entry|
           out.put_next_entry(entry.name)
-
+          puts entry.name
           if @replace[entry.name]
             out.write(@replace[entry.name])
           else
@@ -129,6 +142,8 @@ module Docx
     #++
     def update
       replace_entry "word/document.xml", doc.serialize(:save_with => 0)
+      replace_entry "word/header1.xml", header.serialize(:save_with => 0) if header
+      replace_entry "word/footer1.xml", footer.serialize(:save_with => 0) if footer
     end
 
     # generate Elements::Containers::Paragraph from paragraph XML node
