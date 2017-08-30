@@ -18,6 +18,16 @@ require 'docx'
 # Create a Docx::Document object for our existing docx file
 doc = Docx::Document.open('example.docx')
 
+# Read Header from docx file
+doc.header.xpath('//w:t').each do |node|
+....
+end
+
+# Read Footer from docx file
+doc.footer.xpath('//w:t').each do |node|
+....
+end
+
 # Retrieve and display paragraphs
 doc.paragraphs.each do |p|
   puts p
