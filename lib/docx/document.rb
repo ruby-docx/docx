@@ -116,8 +116,11 @@ module Docx
       Zip::OutputStream.open(path) do |out|
         zip.each do |entry|
           out.put_next_entry(entry.name)
-
+          puts entry.name
           if @replace[entry.name]
+            puts '333333333      33333333' 
+            puts @replace[entry.name]
+
             out.write(@replace[entry.name])
           else
             out.write(zip.read(entry.name))
@@ -142,6 +145,8 @@ module Docx
     #++
     def update
       replace_entry "word/document.xml", doc.serialize(:save_with => 0)
+      replace_entry "word/header1.xml", header.serialize(:save_with => 0) if header
+      replace_entry "word/footer1.xml", footer.serialize(:save_with => 0) if footer
     end
 
     # generate Elements::Containers::Paragraph from paragraph XML node
