@@ -118,9 +118,6 @@ module Docx
           out.put_next_entry(entry.name)
           puts entry.name
           if @replace[entry.name]
-            puts '333333333      33333333' 
-            puts @replace[entry.name]
-
             out.write(@replace[entry.name])
           else
             out.write(zip.read(entry.name))
