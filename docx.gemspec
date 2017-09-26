@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.homepage    = 'https://github.com/chrahunt/docx'
   s.files       = Dir["README.md", "LICENSE.md", "lib/**/*.rb"]
 
-  s.add_dependency 'nokogiri', '~> 1.7.1'
+  s.add_dependency 'nokogiri', '~> 1.8.1'
   s.add_dependency 'rubyzip',  '~> 1.2.1'
 
   s.add_development_dependency 'rspec'
