@@ -20,9 +20,9 @@ module Docx
   class Document
     attr_reader :xml, :doc, :zip, :styles
     
-    def initialize(path, &block)
+    def initialize(path_or_io, options = {}, &block)
       @replace = {}
-      @zip = Zip::File.open(path)
+      @zip = options[:use_buffer] ? Zip::File.open_buffer(path_or_io): Zip::File.open(path_or_io)
       @document_xml = @zip.read('word/document.xml')
       @doc = Nokogiri::XML(@document_xml)
       @styles_xml = @zip.read('word/styles.xml')
@@ -48,6 +48,10 @@ module Docx
     #   open(filepath) {|file| block } => obj
     def self.open(path, &block)
       self.new(path, &block)
+    end
+
+    def self.open_buffer(io, &block)
+      self.new(io, use_buffer: true, &block)
     end
 
     def paragraphs

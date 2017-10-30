@@ -8,11 +8,7 @@ describe Docx::Document do
     @formatting_line_count = 12 # number of lines the formatting.docx file has
   end
 
-  describe 'reading' do
-    before do
-      @doc = Docx::Document.open(@fixtures_path + '/basic.docx')
-    end
-
+  shared_examples_for 'reading' do
     it 'should read the document' do
       expect(@doc.paragraphs.size).to eq(2)
       expect(@doc.paragraphs.first.text).to eq('hello')
@@ -38,6 +34,25 @@ describe Docx::Document do
           expect(tr.formatting).to eq(Docx::Elements::Containers::TextRun::DEFAULT_FORMATTING)
         end
       end
+    end
+  end
+
+  describe 'reading' do
+    context 'using normal file' do
+      before do
+        @doc = Docx::Document.open(@fixtures_path + '/basic.docx')
+      end
+
+      it_behaves_like 'reading'
+    end
+
+    context 'using stream' do
+      before do
+        stream  = File.binread(@fixtures_path + '/basic.docx')
+        @doc = Docx::Document.open_buffer(stream)
+      end
+
+      it_behaves_like 'reading'
     end
   end
 
