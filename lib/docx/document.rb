@@ -18,7 +18,14 @@ module Docx
   #     puts d.text
   #   end
   class Document
-    attr_reader :xml, :doc, :zip, :styles
+
+    DOCUMENT_PATHS = {
+      header: "word/header1.xml",
+      footer: "word/footer1.xml",
+      numbering: "word/numbering.xml",
+    }
+
+    attr_reader :xml, :doc, :zip, :styles, :header, :footer, :numbering
     
     def initialize(path, &block)
       @replace = {}
@@ -27,6 +34,14 @@ module Docx
       @doc = Nokogiri::XML(@document_xml)
       @styles_xml = @zip.read('word/styles.xml')
       @styles = Nokogiri::XML(@styles_xml)
+
+      DOCUMENT_PATHS.each do |attr_name, path|
+        if @zip.find_entry(path)
+          xml_doc = @zip.read(path)
+          self.instance_variable_set(:"@#{attr_name}", Nokogiri::XML(xml_doc))
+        end
+      end
+
       if block_given?
         yield self
         @zip.close
