@@ -15,4 +15,5 @@ Gem::Specification.new do |s|
   s.add_dependency 'rubyzip',  '~> 1.1.6'
 
   s.add_development_dependency 'rspec'
+  s.add_development_dependency 'rake'
 end
