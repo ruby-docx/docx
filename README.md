@@ -61,7 +61,7 @@ doc.tables.each do |table|
       puts cell.text
     end
   end
-  
+
   table.columns.each do |column| # Column-based iteration
     column.cells.each do |cell|
       puts cell.text
@@ -83,6 +83,10 @@ doc.bookmarks['example_bookmark'].insert_text_after("Hello world.")
 
 # Insert multiple lines of text at our bookmark
 doc.bookmarks['example_bookmark_2'].insert_multiple_lines_after(['Hello', 'World', 'foo'])
+
+# The previous methods can also be passed a hash specifying formatting e.g.
+doc.bookmarks['example_bookmark'].insert_text_after("Hello world.",
+  { bold: true, font: 'Times New Roman', font_size: 20, color: 'FF0000' })
 
 # Remove paragraphs
 doc.paragraphs.each do |p|
@@ -117,6 +121,6 @@ p_child = p_element.at_xpath("//child::*") # selects first child
 
 * Calculate element formatting based on values present in element properties as well as properties inherited from parents
 * Default formatting of inserted elements to inherited values
-* Implement formattable elements.
+* Implement formattable tables.
 * Implement styles.
 * Easier multi-line text insertion at a single bookmark (inserting paragraph nodes after the one containing the bookmark)
