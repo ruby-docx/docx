@@ -396,6 +396,10 @@ describe Docx::Document do
       expect(@formatted_line.to_html.scan('<span style="text-decoration:underline;"><strong><em>all</em></strong></span>').size).to eq 1
     end
 
+    it 'should join paragraphs with newlines' do
+      expect(@doc.to_html.scan(%(<p style="font-size:11pt;">Normal</p>\n<p style="font-size:11pt;"><em>Italic</em></p>\n<p style="font-size:11pt;"><strong>Bold</strong></p>)).size).to eq 1
+    end
+
   end
 
   describe 'replacing contents' do
