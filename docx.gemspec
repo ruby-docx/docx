@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.files       = Dir["README.md", "LICENSE.md", "lib/**/*.rb"]
 
   s.add_dependency 'nokogiri', '~> 1.8', '>= 1.8.1'
-  s.add_dependency 'rubyzip',  '~> 1.2', '>= 1.2.1'
+  s.add_dependency 'rubyzip',  '~> 1.2', '>= 1.2.2'
 
   s.add_development_dependency 'rspec', '~> 3.7'
   s.add_development_dependency 'rake', '~> 12.3'
