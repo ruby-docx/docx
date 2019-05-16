@@ -48,6 +48,32 @@ describe Docx::Document do
     end
   end
 
+  shared_examples_for 'saving' do
+    it 'should save to a normal file path' do
+      @new_doc_path = @fixtures_path + '/new_save.docx'
+      @doc.save(@new_doc_path)
+      @new_doc = Docx::Document.open(@new_doc_path)
+      expect(@new_doc.paragraphs.size).to eq(@doc.paragraphs.size)
+    end
+
+    it 'should save to a tempfile' do
+      temp_file = Tempfile.new(['docx_gem', '.docx'])
+      @new_doc_path = temp_file.path
+      @doc.save(@new_doc_path)
+      @new_doc = Docx::Document.open(@new_doc_path)
+      expect(@new_doc.paragraphs.size).to eq(@doc.paragraphs.size)
+
+      temp_file.close
+      temp_file.unlink
+      # ensure temp file has been removed
+      expect(File.exist?(@new_doc_path)).to eq(false)
+    end
+
+    after do
+      File.delete(@new_doc_path) if File.exist?(@new_doc_path)
+    end
+  end
+
   describe 'reading' do
     context 'using normal file' do
       before do
@@ -328,32 +354,21 @@ describe Docx::Document do
   end
 
   describe 'saving' do
-    before do
-      @doc = Docx::Document.open(@fixtures_path + '/saving.docx')
+    context 'from a normal file' do
+      before do
+        @doc = Docx::Document.open(@fixtures_path + '/saving.docx')
+      end
+
+      it_behaves_like 'saving'
     end
 
-    it 'should save to a normal file path' do
-      @new_doc_path = @fixtures_path + '/new_save.docx'
-      @doc.save(@new_doc_path)
-      @new_doc = Docx::Document.open(@new_doc_path)
-      expect(@new_doc.paragraphs.size).to eq(@doc.paragraphs.size)
-    end
+    context 'from a stream' do
+      before do
+        stream = File.binread(@fixtures_path + '/saving.docx')
+        @doc = Docx::Document.open_buffer(stream)
+      end
 
-    it 'should save to a tempfile' do
-      temp_file = Tempfile.new(['docx_gem', '.docx'])
-      @new_doc_path = temp_file.path
-      @doc.save(@new_doc_path)
-      @new_doc = Docx::Document.open(@new_doc_path)
-      expect(@new_doc.paragraphs.size).to eq(@doc.paragraphs.size)
-
-      temp_file.close
-      temp_file.unlink
-      # ensure temp file has been removed
-      expect(File.exist?(@new_doc_path)).to eq(false)
-    end
-
-    after do
-      File.delete(@new_doc_path) if File.exist?(@new_doc_path)
+      it_behaves_like 'saving'
     end
 
     context 'wps modified docx file' do
