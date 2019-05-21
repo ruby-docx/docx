@@ -387,6 +387,17 @@ describe Docx::Document do
       doc = Docx::Document.open(@fixtures_path + '/basic.docx')
       expect(doc.stream).to be_a(StringIO)
     end
+
+    context 'should return a valid docx stream' do
+      before do
+        doc = Docx::Document.open(@fixtures_path + '/basic.docx')
+        result = doc.stream
+
+        @doc = Docx::Document.open_buffer(result)
+      end
+
+      it_behaves_like 'reading'
+    end
   end
 
   describe 'outputting html' do
