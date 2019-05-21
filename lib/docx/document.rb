@@ -121,6 +121,27 @@ module Docx
       zip.close
     end
 
+    # Output entire document as a StringIO object
+    def stream
+      update
+      stream = Zip::OutputStream.write_buffer do |out|
+        zip.each do |entry|
+          next unless entry.file?
+
+          out.put_next_entry(entry.name)
+
+          if @replace[entry.name]
+            out.write(@replace[entry.name])
+          else
+            out.write(zip.read(entry.name))
+          end
+        end
+      end
+
+      stream.rewind
+      stream
+    end
+
     alias text to_s
 
     def replace_entry(entry_path, file_contents)

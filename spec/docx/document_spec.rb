@@ -48,7 +48,7 @@ describe Docx::Document do
     end
   end
 
-  shared_examples_for 'saving' do
+  shared_examples_for 'saving to file' do
     it 'should save to a normal file path' do
       @new_doc_path = @fixtures_path + '/new_save.docx'
       @doc.save(@new_doc_path)
@@ -359,7 +359,7 @@ describe Docx::Document do
         @doc = Docx::Document.open(@fixtures_path + '/saving.docx')
       end
 
-      it_behaves_like 'saving'
+      it_behaves_like 'saving to file'
     end
 
     context 'from a stream' do
@@ -368,7 +368,7 @@ describe Docx::Document do
         @doc = Docx::Document.open_buffer(stream)
       end
 
-      it_behaves_like 'saving'
+      it_behaves_like 'saving to file'
     end
 
     context 'wps modified docx file' do
@@ -379,6 +379,13 @@ describe Docx::Document do
         @new_doc = Docx::Document.open(@new_doc_path)
         expect(@new_doc.paragraphs.size).to eq(@doc.paragraphs.size)
       end
+    end
+  end
+
+  describe 'streaming' do
+    it 'should return a StringIO to send over HTTP' do
+      doc = Docx::Document.open(@fixtures_path + '/basic.docx')
+      expect(doc.stream).to be_a(StringIO)
     end
   end
 
