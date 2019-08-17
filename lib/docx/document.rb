@@ -27,6 +27,8 @@ module Docx
       @doc = Nokogiri::XML(@document_xml)
       @styles_xml = @zip.read('word/styles.xml')
       @styles = Nokogiri::XML(@styles_xml)
+      @rels_xml = @zip.read('word/_rels/document.xml.rels')
+      @rels = Nokogiri::XML(@rels_xml)
       if block_given?
         yield self
         @zip.close
@@ -37,7 +39,8 @@ module Docx
     # This stores the current global document properties, for now
     def document_properties
       {
-        font_size: font_size
+        font_size: font_size,
+        hyperlinks: hyperlinks
       }
     end
 
@@ -72,6 +75,11 @@ module Docx
     def font_size
       size_tag = @styles.xpath('//w:docDefaults//w:rPrDefault//w:rPr//w:sz').first
       size_tag ? size_tag.attributes['val'].value.to_i / 2 : nil
+    end
+
+    # Hyperlink targets are extracted from the document.xml.rels
+    def hyperlinks
+      @rels.xpath("//xmlns:Relationship[contains(@Type,'hyperlink')]")
     end
 
     ##
