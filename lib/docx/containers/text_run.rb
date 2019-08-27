@@ -94,13 +94,7 @@ module Docx
         end
 
         def href
-          return unless hyperlink
-
-          hyperlink.attributes['Target'].value
-        end
-
-        def hyperlink
-          @document_properties[:hyperlinks].at("Relationship[@Id='#{hyperlink_id}']")
+          @document_properties[:hyperlinks][hyperlink_id]
         end
 
         def hyperlink_id

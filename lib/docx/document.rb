@@ -77,8 +77,14 @@ module Docx
       size_tag ? size_tag.attributes['val'].value.to_i / 2 : nil
     end
 
-    # Hyperlink targets are extracted from the document.xml.rels
+    # Hyperlink targets are extracted from the document.xml.rels file
     def hyperlinks
+      hyperlink_relationships.each_with_object({}) do |rel, hash|
+        hash[rel.attributes['Id'].value] = rel.attributes['Target'].value
+      end 
+    end
+
+    def hyperlink_relationships
       @rels.xpath("//xmlns:Relationship[contains(@Type,'hyperlink')]")
     end
 
