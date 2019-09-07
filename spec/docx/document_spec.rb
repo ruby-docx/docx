@@ -331,7 +331,7 @@ describe Docx::Document do
       @span_regex = /(\<span).+((?<=\>)\w+)(<\/span>)/
       @em_regex = /(\<em).+((?<=\>)\w+)(\<\/em\>)/
       @strong_regex = /(\<strong).+((?<=\>)\w+)(\<\/strong\>)/
-      @anchor_tag_regex = /(\<a href=")(.+)("\>)(.+)(\<\/a>)/
+      @anchor_tag_regex = /\<a href="(.+)" target="_blank"\>(.+)\<\/a>/
     end
 
     it 'should wrap pragraphs in a p tag' do
@@ -411,8 +411,8 @@ describe Docx::Document do
 
     it 'should convert hyperlinks to anchor tags' do
       scan = @doc.to_html.scan(@anchor_tag_regex).flatten
-      expect(scan[1]).to eq "http://www.google.com/"
-      expect(scan[3]).to eq "hyperlink"
+      expect(scan[0]).to eq "http://www.google.com/"
+      expect(scan[1]).to eq "hyperlink"
     end
   end
 

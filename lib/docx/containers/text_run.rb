@@ -68,7 +68,7 @@ module Docx
           # No need to be granular with font size down to the span level if it doesn't vary.
           styles['font-size'] = "#{font_size}pt" if font_size != @font_size 
           html = html_tag(:span, content: html, styles: styles) unless styles.empty?
-          html = html_tag(:a, content: html, attributes: {href: href}) if hyperlink?
+          html = html_tag(:a, content: html, attributes: {href: href, target: "_blank"}) if hyperlink?
           return html
         end
 
