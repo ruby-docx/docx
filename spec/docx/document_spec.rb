@@ -279,6 +279,22 @@ describe Docx::Document do
     end
   end
 
+  describe 'multiple documents' do
+    before do
+      @doc = Docx::Document.open(@fixtures_path + '/multi_doc.docx')
+    end
+
+    it 'should extract all inner documents' do
+      expect(@doc.doc).to_not be_nil
+      expect(@doc.styles).to_not be_nil
+      expect(@doc.headers).to_not be_nil
+      expect(@doc.headers["header1"].text).to eq "Hello from the header."
+      expect(@doc.footers).to_not be_nil
+      expect(@doc.footers["footer1"].text).to eq "Hello from the footer."
+      expect(@doc.numbering).to_not be_nil
+    end
+  end
+
   describe 'saving' do
     before do
       @doc = Docx::Document.open(@fixtures_path + '/saving.docx')
