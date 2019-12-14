@@ -89,6 +89,12 @@ describe Docx::Document do
     it "should read embedded links" do
       expect(@doc.tables[0].columns[1].cells[1].text).to match(/^Directive/)
     end
+
+    describe '#paragraphs' do
+      it 'should not grabs paragraphs in the tables' do
+        expect(@doc.paragraphs.map(&:text)).to_not include("Second table")
+      end
+    end
   end
 
   describe 'editing'  do
