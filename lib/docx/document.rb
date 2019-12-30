@@ -51,7 +51,7 @@ module Docx
     end
 
     def paragraphs
-      @doc.xpath('//w:document//w:body//w:p').map { |p_node| parse_paragraph_from p_node }
+      @doc.xpath('//w:document//w:body/w:p').map { |p_node| parse_paragraph_from p_node }
     end
 
     def bookmarks
