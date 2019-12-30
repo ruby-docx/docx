@@ -8,7 +8,7 @@ A ruby library/gem for interacting with `.docx` files. currently capabilities in
 
 Requires ruby (tested with 2.1.1)
 
-    gem 'docx', '~> 0.2.07', :require => ["docx"]
+    gem 'docx', '~> 0.3.0'
 
 ### Reading
 
