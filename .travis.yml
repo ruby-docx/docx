@@ -2,8 +2,18 @@ language: ruby
 dist: trusty
 sudo: false
 rvm:
-- 2.4
-- 2.5
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - ruby-head
+
+matrix:
+  allow_failures:
+    - rvm: ruby-head
+
+cache: bundler
 bundler_args: --jobs=2
+
 script:
-- bundle exec rake spec
+  - bundle exec rake spec
