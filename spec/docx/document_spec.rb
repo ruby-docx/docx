@@ -166,6 +166,24 @@ describe Docx::Document do
     end
   end
 
+  describe 'format-preserving substitution' do
+    before do
+      @doc = Docx::Document.open(@fixtures_path + '/substitution.docx')
+    end
+
+    it 'should replace placeholder in any line of a paragraph' do
+      expect(@doc.paragraphs[0].text).to eq('Page title')
+      expect(@doc.paragraphs[1].text).to eq('Multi-line paragraph line 1_placeholder2_ line 2_placeholder3_ line3 ')
+
+      @doc.paragraphs[1].each_text_run do |text_run|
+        text_run.substitute('_placeholder2_', 'same paragraph')
+        text_run.substitute('_placeholder3_', 'yet the same paragraph')
+      end
+
+      expect(@doc.paragraphs[1].text).to eq('Multi-line paragraph line 1same paragraph line 2yet the same paragraph line3 ')
+    end
+  end
+
   describe 'read formatting' do
     before do
       @doc = Docx::Document.open(@fixtures_path + '/formatting.docx')
