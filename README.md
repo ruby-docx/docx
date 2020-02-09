@@ -4,11 +4,29 @@ A ruby library/gem for interacting with `.docx` files. currently capabilities in
 
 ## Usage
 
+### Prerequisites
+
+- Ruby 2.4 or later
+
 ### Install
 
-Requires ruby (tested with 2.1.1)
+Add the following line to your application's Gemfile:
 
-    gem 'docx', '~> 0.3.0'
+```ruby
+gem 'docx'
+```
+
+And then execute:
+
+```shell
+bundle install
+```
+
+Or install it yourself as:
+
+```shell
+gem install docx
+```
 
 ### Reading
 
@@ -61,7 +79,7 @@ doc.tables.each do |table|
       puts cell.text
     end
   end
-  
+
   table.columns.each do |column| # Column-based iteration
     column.cells.each do |cell|
       puts cell.text
