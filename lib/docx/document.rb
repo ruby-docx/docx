@@ -25,8 +25,7 @@ module Docx
       @zip = Zip::File.open(path)
       @document_xml = @zip.read('word/document.xml')
       @doc = Nokogiri::XML(@document_xml)
-      @styles_xml = @zip.read('word/styles.xml')
-      @styles = Nokogiri::XML(@styles_xml)
+      load_styles
       if block_given?
         yield self
         @zip.close
@@ -70,6 +69,8 @@ module Docx
     # Some documents have this set, others don't.
     # Values are returned as half-points, so to get points, that's why it's divided by 2.
     def font_size
+      return nil unless @styles
+
       size_tag = @styles.xpath('//w:docDefaults//w:rPrDefault//w:rPr//w:sz').first
       size_tag ? size_tag.attributes['val'].value.to_i / 2 : nil
     end
@@ -122,6 +123,14 @@ module Docx
     end
 
     private
+
+    def load_styles
+      @styles_xml = @zip.read('word/styles.xml')
+      @styles = Nokogiri::XML(@styles_xml)
+    rescue Errno::ENOENT => e
+      warn e.message
+      nil
+    end
 
     #--
     # TODO: Flesh this out to be compatible with other files

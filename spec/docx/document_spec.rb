@@ -39,6 +39,18 @@ describe Docx::Document do
         end
       end
     end
+
+    describe '#font_size' do
+      context 'When a docx files has no styles.xml' do
+        before do
+          @doc = Docx::Document.new(@fixtures_path + '/no_styles.docx')
+        end
+
+        it 'should raise an error' do
+          expect(@doc.font_size).to be_nil
+        end
+      end
+    end
   end
 
   describe 'read tables' do
