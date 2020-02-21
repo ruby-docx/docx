@@ -86,7 +86,7 @@ describe Docx::Document do
     context 'using stream' do
       before do
         stream = File.binread(@fixtures_path + '/basic.docx')
-        @doc = Docx::Document.open_buffer(stream)
+        @doc = Docx::Document.open(stream)
       end
 
       it_behaves_like 'reading'
@@ -365,7 +365,7 @@ describe Docx::Document do
     context 'from a stream' do
       before do
         stream = File.binread(@fixtures_path + '/saving.docx')
-        @doc = Docx::Document.open_buffer(stream)
+        @doc = Docx::Document.open(stream)
       end
 
       it_behaves_like 'saving to file'
@@ -393,7 +393,7 @@ describe Docx::Document do
         doc = Docx::Document.open(@fixtures_path + '/basic.docx')
         result = doc.stream
 
-        @doc = Docx::Document.open_buffer(result)
+        @doc = Docx::Document.open(result)
       end
 
       it_behaves_like 'reading'

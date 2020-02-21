@@ -23,7 +23,12 @@ module Docx
     def initialize(path_or_io, options = {})
       @replace = {}
 
-      @zip = options[:use_buffer] ? Zip::File.open_buffer(path_or_io) : Zip::File.open(path_or_io)
+      # if path-or_io is string && does not contain a null byte
+      if (path_or_io.instance_of?(String) && !/\u0000/.match?(path_or_io))
+        @zip = Zip::File.open(path_or_io)
+      else
+        @zip = Zip::File.open_buffer(path_or_io)
+      end
 
       @document_xml = @zip.read('word/document.xml')
       @doc = Nokogiri::XML(@document_xml)
@@ -47,10 +52,6 @@ module Docx
     #   open(filepath) {|file| block } => obj
     def self.open(path, &block)
       new(path, &block)
-    end
-
-    def self.open_buffer(buffer, &block)
-      new(buffer, use_buffer: true, &block)
     end
 
     def paragraphs
