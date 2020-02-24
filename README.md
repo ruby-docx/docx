@@ -57,7 +57,7 @@ Don't have a local file but a buffer? Docx handles those to:
 require 'docx'
 
 # Create a Docx::Document object from a remote file
-doc = Docx::Document.open_buffer(buffer)
+doc = Docx::Document.open(buffer)
 
 # Everything about reading is the same as shown above
 ```
