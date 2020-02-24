@@ -51,6 +51,17 @@ doc.bookmarks.each_pair do |bookmark_name, bookmark_object|
 end
 ```
 
+Don't have a local file but a buffer? Docx handles those to:
+
+```ruby
+require 'docx'
+
+# Create a Docx::Document object from a remote file
+doc = Docx::Document.open(buffer)
+
+# Everything about reading is the same as shown above
+```
+
 ### Rendering html
 ``` ruby
 require 'docx'
