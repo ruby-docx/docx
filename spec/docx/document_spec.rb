@@ -74,6 +74,16 @@ describe Docx::Document do
     end
   end
 
+  describe '#open' do
+    context 'When reading a file made by Office365' do
+      it 'supports it' do
+        expect do
+          Docx::Document.open(@fixtures_path + '/office365.docx')
+        end.to_not raise_error
+      end
+    end
+  end
+
   describe 'reading' do
     context 'using normal file' do
       before do

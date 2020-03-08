@@ -30,13 +30,17 @@ module Docx
         @zip = Zip::File.open_buffer(path_or_io)
       end
 
-      @document_xml = @zip.read('word/document.xml')
+      document = @zip.find_entry('word/document.xml')
+      document = @zip.find_entry('word/document2.xml') if document.nil?
+      raise Errno::ENOENT if document.nil?
+
+      @document_xml = document.get_input_stream.read
       @doc = Nokogiri::XML(@document_xml)
       load_styles
-      if block_given?
-        yield self
-        @zip.close
-      end
+      return unless block_given?
+
+      yield self
+      @zip.close
     end
 
     # This stores the current global document properties, for now
