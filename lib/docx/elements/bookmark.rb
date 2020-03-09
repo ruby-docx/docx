@@ -5,7 +5,7 @@ module Docx
     class Bookmark
       include Element
       attr_accessor :name
-      
+
       def self.tag
         'bookmarkStart'
       end
@@ -17,14 +17,14 @@ module Docx
 
       # Insert text before bookmarkStart node
       def insert_text_before(text)
-        text_run = get_run_after
-        text_run.text = "#{text}#{text_run.text}"
+        text_run = get_run_before
+        text_run.text = "#{text_run.text}#{text}"
       end
 
       # Insert text after bookmarkStart node
       def insert_text_after(text)
-        text_run = get_run_before
-        text_run.text = "#{text_run.text}#{text}"
+        text_run = get_run_after
+        text_run.text = "#{text}#{text_run.text}"
       end
 
       # insert multiple lines starting with paragraph containing bookmark node.
@@ -51,7 +51,7 @@ module Docx
 
       # Get text run immediately prior to bookmark node
       def get_run_before
-        # at_xpath returns the first match found and preceding-sibling returns siblings in the 
+        # at_xpath returns the first match found and preceding-sibling returns siblings in the
         # order they appear in the document not the order as they appear when moving out from
         # the starting node
         if not (r_nodes = @node.xpath("./preceding-sibling::w:r")).empty?
