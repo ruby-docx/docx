@@ -37,9 +37,8 @@ module Docx
       @document_xml = document.get_input_stream.read
       @doc = Nokogiri::XML(@document_xml)
       load_styles
-      return unless block_given?
-
-      yield self
+      yield(self) if block_given?
+    ensure
       @zip.close
     end
 
