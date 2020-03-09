@@ -31,7 +31,7 @@ module Docx
       end
 
       document = @zip.find_entry('word/document.xml')
-      document = @zip.find_entry('word/document2.xml') if document.nil?
+      document ||= @zip.find_entry('word/document2.xml')
       raise Errno::ENOENT if document.nil?
 
       @document_xml = document.get_input_stream.read
