@@ -2,6 +2,7 @@
 
 [![Gem Version](https://badge.fury.io/rb/docx.svg)](https://badge.fury.io/rb/docx)
 [![Build Status](https://travis-ci.org/ruby-docx/docx.svg?branch=master)](https://travis-ci.org/ruby-docx/docx)
+[![Coverage Status](https://coveralls.io/repos/github/ruby-docx/docx/badge.svg?branch=master)](https://coveralls.io/github/ruby-docx/docx?branch=master)
 [![Gitter](https://badges.gitter.im/ruby-docx/community.svg)](https://gitter.im/ruby-docx/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 A ruby library/gem for interacting with `.docx` files. currently capabilities include reading paragraphs/bookmarks, inserting text at bookmarks, reading tables/rows/columns/cells and saving the document.
