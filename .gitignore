@@ -4,3 +4,4 @@ Gemfile.lock
 pkg/*
 doc/
 vendor/
+coverage/
