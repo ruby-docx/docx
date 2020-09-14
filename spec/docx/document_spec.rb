@@ -7,7 +7,7 @@ require 'tempfile'
 describe Docx::Document do
   before(:all) do
     @fixtures_path = 'spec/fixtures'
-    @formatting_line_count = 12 # number of lines the formatting.docx file has
+    @formatting_line_count = 13 # number of lines the formatting.docx file has
   end
 
   describe '#open' do
@@ -205,6 +205,8 @@ describe Docx::Document do
       expect(@doc.paragraphs[8].text).to eq('This paragraph is aligned right.')
       expect(@doc.paragraphs[9].text).to eq('This paragraph is 14 points.')
       expect(@doc.paragraphs[10].text).to eq('This paragraph has a word at 16 points.')
+      expect(@doc.paragraphs[11].text).to eq('This sentence has different formatting in different places.')
+      expect(@doc.paragraphs[12].text).to eq('This sentence has a hyperlink.')
     end
 
     it 'should contain a paragraph with multiple text runs' do
@@ -354,6 +356,7 @@ describe Docx::Document do
       @span_regex = /(\<span).+((?<=\>)\w+)(<\/span>)/
       @em_regex = /(\<em).+((?<=\>)\w+)(\<\/em\>)/
       @strong_regex = /(\<strong).+((?<=\>)\w+)(\<\/strong\>)/
+      @anchor_tag_regex = /\<a href="(.+)" target="_blank"\>(.+)\<\/a>/
     end
 
     it 'should wrap pragraphs in a p tag' do
@@ -433,6 +436,12 @@ describe Docx::Document do
 
     it 'should join paragraphs with newlines' do
       expect(@doc.to_html.scan(%(<p style="font-size:11pt;">Normal</p>\n<p style="font-size:11pt;"><em>Italic</em></p>\n<p style="font-size:11pt;"><strong>Bold</strong></p>)).size).to eq 1
+    end
+
+    it 'should convert hyperlinks to anchor tags' do
+      scan = @doc.to_html.scan(@anchor_tag_regex).flatten
+      expect(scan[0]).to eq "http://www.google.com/"
+      expect(scan[1]).to eq "hyperlink"
     end
   end
 

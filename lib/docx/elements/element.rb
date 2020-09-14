@@ -65,8 +65,10 @@ module Docx
       def html_tag(name, options = {})
         content = options[:content]
         styles = options[:styles]
+        attributes = options[:attributes]
 
         html = "<#{name.to_s}"
+        
         unless styles.nil? || styles.empty?
           styles_array = []
           styles.each do |property, value|
@@ -74,6 +76,13 @@ module Docx
           end
           html << " style=\"#{styles_array.join('')}\""
         end
+        
+        unless attributes.nil? || attributes.empty?
+          attributes.each do |attr_name, attr_value|
+            html << " #{attr_name}=\"#{attr_value}\""
+          end
+        end
+        
         html << ">"
         html << content if content
         html << "</#{name.to_s}>"

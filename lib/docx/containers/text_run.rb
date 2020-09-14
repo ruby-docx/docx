@@ -23,6 +23,8 @@ module Docx
         def initialize(node, document_properties = {})
           @node = node
           @text_nodes = @node.xpath('w:t').map {|t_node| Elements::Text.new(t_node) }
+          @text_nodes = @node.xpath('w:t|w:r/w:t').map {|t_node| Elements::Text.new(t_node) }
+
           @properties_tag = 'rPr'
           @text       = parse_text || ''
           @formatting = parse_formatting || DEFAULT_FORMATTING
@@ -74,6 +76,7 @@ module Docx
           # No need to be granular with font size down to the span level if it doesn't vary.
           styles['font-size'] = "#{font_size}pt" if font_size != @font_size 
           html = html_tag(:span, content: html, styles: styles) unless styles.empty?
+          html = html_tag(:a, content: html, attributes: {href: href, target: "_blank"}) if hyperlink?
           return html
         end
 
@@ -88,6 +91,18 @@ module Docx
         def underlined?
           @formatting[:underline]
         end
+
+        def hyperlink?
+          @node.name == 'hyperlink'
+        end
+
+        def href
+          @document_properties[:hyperlinks][hyperlink_id]
+        end
+
+        def hyperlink_id
+          @node.attributes['id'].value
+        end        
 
         def font_size
           size_tag = @node.xpath('w:rPr//w:sz').first

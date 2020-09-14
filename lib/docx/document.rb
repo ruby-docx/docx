@@ -45,7 +45,8 @@ module Docx
     # This stores the current global document properties, for now
     def document_properties
       {
-        font_size: font_size
+        font_size: font_size,
+        hyperlinks: hyperlinks
       }
     end
 
@@ -82,6 +83,17 @@ module Docx
       size_tag = @styles.xpath('//w:docDefaults//w:rPrDefault//w:rPr//w:sz').first
       size_tag ? size_tag.attributes['val'].value.to_i / 2 : nil
     end
+
+    # Hyperlink targets are extracted from the document.xml.rels file
+    def hyperlinks
+      hyperlink_relationships.each_with_object({}) do |rel, hash|
+        hash[rel.attributes['Id'].value] = rel.attributes['Target'].value
+      end 
+    end
+
+    def hyperlink_relationships
+      @rels.xpath("//xmlns:Relationship[contains(@Type,'hyperlink')]")
+    end    
 
     ##
     # *Deprecated*
@@ -157,6 +169,8 @@ module Docx
     def load_styles
       @styles_xml = @zip.read('word/styles.xml')
       @styles = Nokogiri::XML(@styles_xml)
+      @rels_xml = @zip.read('word/_rels/document.xml.rels')
+      @rels = Nokogiri::XML(@rels_xml)
     rescue Errno::ENOENT => e
       warn e.message
       nil
