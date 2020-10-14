@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.6.0
+
+### Enhancements
+
+- Added support for hyperlinks (implemented [#70](https://github.com/ruby-docx/docx/pull/70) again) by ollieh-m and gopeter [#92](https://github.com/ruby-docx/docx/pull/92)
+
+### Chores
+
+- Drop ruby 2.4 from supporeted versions by satoryu [#93](https://github.com/ruby-docx/docx/pull/93)
+- Refactoring `spec_helper` by satoryu [#90](https://github.com/ruby-docx/docx/pull/90)
+- Starts measuring code coverage with coveralls by satoryu [#88](https://github.com/ruby-docx/docx/pull/88)
+
 ## v0.5.0
 
 ### Enhancements
