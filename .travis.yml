@@ -1,6 +1,5 @@
 language: ruby
-dist: trusty
-sudo: false
+dist: xenial
 rvm:
   - 2.5
   - 2.6
