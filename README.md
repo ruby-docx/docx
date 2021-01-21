@@ -134,6 +134,31 @@ end
 doc.save('example-edited.docx')
 ```
 
+### Writing to tables
+
+``` ruby
+require 'docx'
+
+# Create a Docx::Document object for our existing docx file
+doc = Docx::Document.open('tables.docx')
+
+# Copy row of a table and then substitute text in a cell
+doc.tables.first.rows.first.then do |row|
+  new_row = row.copy
+  new_row.insert_after(row)
+
+  row.cells.first.then do |c|
+    c.paragraphs.each do |p|
+      p.each_text_run do |tr|
+        tr.substitute('_table_placeholder_', 'replacement value')
+      end
+    end
+  end
+end
+
+doc.save('tables-edited.docx')
+```
+
 ### Advanced
 
 ``` ruby
