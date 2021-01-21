@@ -142,15 +142,19 @@ require 'docx'
 # Create a Docx::Document object for our existing docx file
 doc = Docx::Document.open('tables.docx')
 
-# Copy row of a table and then substitute text in a cell
-doc.tables.first.rows.first.then do |row|
-  new_row = row.copy
-  new_row.insert_after(row)
+# Iterate over each table
+doc.tables.each do |table|
+  last_row = table.rows.last
+  
+  # Copy last row and insert a new one before last row
+  new_row = last_row.copy
+  new_row.insert_before(last_row)
 
-  row.cells.first.then do |c|
-    c.paragraphs.each do |p|
-      p.each_text_run do |tr|
-        tr.substitute('_table_placeholder_', 'replacement value')
+  # Substitute text in each cell of this new row
+  new_row.cells.each do |cell|
+    cell.paragraphs.each do |paragraph|
+      paragraph.each_text_run do |text|
+        text.substitute('_placeholder_', 'replacement value')
       end
     end
   end
