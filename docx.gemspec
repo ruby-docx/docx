@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'nokogiri', '~> 1.10', '>= 1.10.4'
   s.add_dependency 'rubyzip',  '~> 2.0'
 
-  s.add_development_dependency 'coveralls', '~> 0.8'
+  s.add_development_dependency 'coveralls_reborn', '~> 0.21'
   s.add_development_dependency 'rake', '~> 13.0'
   s.add_development_dependency 'rspec', '~> 3.7'
 end
