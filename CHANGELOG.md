@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.6.1
+
+### Bug fixes
+
+- Use `Zip::File#glob` to match any `document.xml` [#104](https://github.com/ruby-docx/docx/pull/104)
+
+### Chores
+
+- Enable Coverall's coverage report [#102](https://github.com/ruby-docx/docx/pull/102)
+- Add table write example to README.md [#99](https://github.com/ruby-docx/docx/pull/99)
+- Replace Travis CI build with GitHub Action [#98](https://github.com/ruby-docx/docx/pull/98)
+- Add ruby 3.0 to versions for testing on Travis CI [#97](https://github.com/ruby-docx/docx/pull/97)
+
 ## v0.6.0
 
 ### Enhancements
