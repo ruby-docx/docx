@@ -30,8 +30,7 @@ module Docx
         @zip = Zip::File.open_buffer(path_or_io)
       end
 
-      document = @zip.find_entry('word/document.xml')
-      document ||= @zip.find_entry('word/document2.xml')
+      document = @zip.glob('word/document*.xml').first
       raise Errno::ENOENT if document.nil?
 
       @document_xml = document.get_input_stream.read
