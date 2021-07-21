@@ -474,5 +474,8 @@ describe Docx::Document do
     it 'does not raise error' do
       expect { doc.to_s }.to_not raise_error
     end
+    it 'returns a String' do
+      expect(doc.to_s).to be_a(String)
+    end
   end
 end
