@@ -467,4 +467,12 @@ describe Docx::Document do
       File.delete(temp_file_path) if File.exist?(temp_file_path)
     end
   end
+
+  describe '#to_s' do
+    let(:doc) { Docx::Document.open(@fixtures_path + '/weird_docx.docx') }
+
+    it 'does not raise error' do
+      expect { doc.to_s }.to_not raise_error
+    end
+  end
 end
