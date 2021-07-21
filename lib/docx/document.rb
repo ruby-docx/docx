@@ -87,12 +87,12 @@ module Docx
     def hyperlinks
       hyperlink_relationships.each_with_object({}) do |rel, hash|
         hash[rel.attributes['Id'].value] = rel.attributes['Target'].value
-      end 
+      end
     end
 
     def hyperlink_relationships
       @rels.xpath("//xmlns:Relationship[contains(@Type,'hyperlink')]")
-    end    
+    end
 
     ##
     # *Deprecated*
@@ -168,11 +168,18 @@ module Docx
     def load_styles
       @styles_xml = @zip.read('word/styles.xml')
       @styles = Nokogiri::XML(@styles_xml)
-      @rels_xml = @zip.read('word/_rels/document.xml.rels')
-      @rels = Nokogiri::XML(@rels_xml)
+      load_rels
     rescue Errno::ENOENT => e
       warn e.message
       nil
+    end
+
+    def load_rels
+      rels_entry = @zip.glob('word/_rels/document*.xml.rels').first
+      raise Errno::ENOENT unless rels_entry
+
+      @rels_xml = rels_entry.get_input_stream.read
+      @rels = Nokogiri::XML(@rels_xml)
     end
 
     #--
