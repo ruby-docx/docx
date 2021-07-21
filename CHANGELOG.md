@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.6.2
+
+### Bug fixes
+
+- Fix `Docx::Document#to_s` fails when given file has `document22.xml.rels` [#112](https://github.com/ruby-docx/docx/pull/112), [#106](https://github.com/ruby-docx/docx/pull/106)
+
 ## v0.6.1
 
 ### Bug fixes
