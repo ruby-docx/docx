@@ -18,6 +18,16 @@ describe Docx::Document do
         end.to_not raise_error
       end
     end
+
+    context 'When reading a invalid file' do
+      # Previously we were returning
+      # NoMethodError: undefined method `close' for nil:NilClass
+      it 'returns a helpful error about opening the file' do
+        expect do
+          Docx::Document.open(@fixtures_path + '/replacement.png')
+        end.to raise_error(Zip::Error)
+      end
+    end
   end
 
   describe 'reading' do

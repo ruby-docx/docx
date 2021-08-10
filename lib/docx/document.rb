@@ -38,7 +38,7 @@ module Docx
       load_styles
       yield(self) if block_given?
     ensure
-      @zip.close
+      @zip.close unless @zip.nil?
     end
 
     # This stores the current global document properties, for now
