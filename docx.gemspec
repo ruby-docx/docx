@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.files       = Dir['README.md', 'LICENSE.md', 'lib/**/*.rb']
   s.required_ruby_version = '>= 2.5.0'
 
-  s.add_dependency 'nokogiri', '~> 1.10', '>= 1.10.4'
+  s.add_dependency 'nokogiri', '~> 1.11', '>= 1.11.2'
   s.add_dependency 'rubyzip',  '~> 2.0'
 
   s.add_development_dependency 'coveralls_reborn', '~> 0.21'
