@@ -45,7 +45,8 @@ module Docx
     def document_properties
       {
         font_size: font_size,
-        hyperlinks: hyperlinks
+        hyperlinks: hyperlinks,
+        font: font
       }
     end
 
@@ -81,6 +82,11 @@ module Docx
 
       size_tag = @styles.xpath('//w:docDefaults//w:rPrDefault//w:rPr//w:sz').first
       size_tag ? size_tag.attributes['val'].value.to_i / 2 : nil
+    end
+
+    def font
+      font_tag = @styles.at_xpath('//w:docDefaults//w:rPrDefault//w:rPr//w:rFonts')
+      font_tag ? font_tag['w:ascii'] : nil
     end
 
     # Hyperlink targets are extracted from the document.xml.rels file

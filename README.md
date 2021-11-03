@@ -145,7 +145,7 @@ doc = Docx::Document.open('tables.docx')
 # Iterate over each table
 doc.tables.each do |table|
   last_row = table.rows.last
-  
+
   # Copy last row and insert a new one before last row
   new_row = last_row.copy
   new_row.insert_before(last_row)
@@ -179,6 +179,67 @@ end
 p_element = d.paragraphs.first
 p_children = p_element.xpath("//child::*") # selects all children
 p_child = p_element.at_xpath("//child::*") # selects first child
+```
+
+## 扩展使用
+### 写入样式
+
+使用方式:
+```ruby
+gem 'docx', '0.6.3-rcc', :git => 'https://github.com/rccgroup/docx.git', :branch => 'master'
+```
+
+支持传入样式：
+- insert_text_before(text, formatting = {})
+- insert_text_after(text, formatting = {})
+- insert_multiple_lines(text, formatting = {})
+
+也可以针对单个 `textrun` 进行设置：
+- textrun.set_text(content, formatting = {})
+
+formatting 支持的参数为：
+- :italic => boolean
+- :bold => boolean
+- :underline => boolean
+- :font => 'font_name'
+- :font_size => font_size
+- :color => color as hex string e.g. 'FF0000' for red
+
+
+```ruby
+doc = Docx::Document.open('format_example.docx')
+
+formatting = {
+  italic: false,
+  underline: true,
+  bold: true,
+  font: 'Times New Roman',
+  font_size: 20,
+  color: 'FF0000'
+}
+
+doc.bookmarks["price_index_1"].insert_text_after("100", formatting)
+doc.bookmarks["price_index_2"].insert_text_after("50", formatting.merge(italic: true, bold: false))
+doc.bookmarks["price_index_3"].insert_text_after("999", formatting.merge(font_size: 10, color: 'yellow'))
+
+doc.bookmarks["name_index"].insert_text_before("小明", formatting.merge(font_size: 12, color: 'blue'))
+
+doc.paragraphs.each do |p|
+  puts p
+end
+
+doc.paragraphs.each do |paragraph|
+  paragraph.each_text_run do |tr|
+    tr.substitute("_key_1", "小明")
+  end
+end
+
+doc.bookmarks["batch_index"].insert_multiple_lines(
+  ["行业-1", "行业-2", "行业-3"],
+  formatting.merge(font_size: 8, underline: false, )
+)
+
+doc.save('/Users/rcc0016748/Project/phone-cloud/format_example-edited.docx')
 ```
 
 ## Development

@@ -1,4 +1,5 @@
 require 'docx/containers/container'
+require 'docx/formatting/text_run_formatting'
 
 module Docx
   module Elements
@@ -6,30 +7,37 @@ module Docx
       class TextRun
         include Container
         include Elements::Element
+        include TextRunFormatting
 
         DEFAULT_FORMATTING = {
           italic:    false,
           bold:      false,
           underline: false
         }
-        
+
+        attr_reader :text
+        attr_reader :document_properties
+        attr_reader :properties_tag
+
         def self.tag
           'r'
         end
 
-        attr_reader :text
-        attr_reader :formatting
-        
         def initialize(node, document_properties = {})
           @node = node
+          @document_properties = document_properties
           @text_nodes = @node.xpath('w:t').map {|t_node| Elements::Text.new(t_node) }
           @text_nodes = @node.xpath('w:t|w:r/w:t').map {|t_node| Elements::Text.new(t_node) }
 
           @properties_tag = 'rPr'
           @text       = parse_text || ''
-          @formatting = parse_formatting || DEFAULT_FORMATTING
-          @document_properties = document_properties
           @font_size = @document_properties[:font_size]
+        end
+
+        # Set the text of text run with formatting
+        def set_text(content, formatting = {})
+          self.text = content
+          apply_formatting(formatting)
         end
 
         # Set text of text run
@@ -54,14 +62,6 @@ module Docx
           end
         end
 
-        def parse_formatting
-          {
-            italic:    !@node.xpath('.//w:i').empty?,
-            bold:      !@node.xpath('.//w:b').empty?,
-            underline: !@node.xpath('.//w:u').empty?
-          }
-        end
-
         def to_s
           @text
         end
@@ -71,25 +71,30 @@ module Docx
           html = @text
           html = html_tag(:em, content: html) if italicized?
           html = html_tag(:strong, content: html) if bolded?
+
           styles = {}
           styles['text-decoration'] = 'underline' if underlined?
           # No need to be granular with font size down to the span level if it doesn't vary.
-          styles['font-size'] = "#{font_size}pt" if font_size != @font_size 
+          # styles['font-size'] = "#{font_size}pt" if font_size != @font_size
+          styles['font-size'] = "#{font_size}pt" if font_size != @font_size
+          styles['font-family'] = %Q["#{formatting[:font]}"] if formatting[:font]
+          styles['color'] = "##{formatting[:color]}" if formatting[:color]
+
           html = html_tag(:span, content: html, styles: styles) unless styles.empty?
           html = html_tag(:a, content: html, attributes: {href: href, target: "_blank"}) if hyperlink?
           return html
         end
 
         def italicized?
-          @formatting[:italic]
+          formatting[:italic]
         end
-        
+
         def bolded?
-          @formatting[:bold]
+          formatting[:bold]
         end
-        
+
         def underlined?
-          @formatting[:underline]
+          formatting[:underline]
         end
 
         def hyperlink?
@@ -102,7 +107,7 @@ module Docx
 
         def hyperlink_id
           @node.attributes['id'].value
-        end        
+        end
 
         def font_size
           size_tag = @node.xpath('w:rPr//w:sz').first

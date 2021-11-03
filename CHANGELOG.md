@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.6.3-rcc
+
+### add feature
+
+支持传入样式：
+- insert_text_before(text, formatting = {})
+- insert_text_after(text, formatting = {})
+- insert_multiple_lines(text, formatting = {})
+
+也可以针对单个 `textrun` 进行设置：
+- textrun.set_text(content, formatting = {})
+
+formatting 支持的参数为：
+- :italic => boolean
+- :bold => boolean
+- :underline => boolean
+- :font => 'font_name'
+- :font_size => font_size
+- :color => color as hex string e.g. 'FF0000' for red
+
+
 ## v0.6.2
 
 ### Bug fixes

@@ -16,19 +16,20 @@ module Docx
       end
 
       # Insert text before bookmarkStart node
-      def insert_text_before(text)
+      def insert_text_before(text, formatting = {})
         text_run = get_run_before
-        text_run.text = "#{text_run.text}#{text}"
+        text_run.set_text("#{text}#{text_run.text}", formatting)
       end
 
       # Insert text after bookmarkStart node
-      def insert_text_after(text)
+      def insert_text_after(text, formatting = {})
         text_run = get_run_after
-        text_run.text = "#{text}#{text_run.text}"
+        text_run.set_text("#{text_run.text}#{text}", formatting)
       end
 
+      # 支持写入样式
       # insert multiple lines starting with paragraph containing bookmark node.
-      def insert_multiple_lines(text_array)
+      def insert_multiple_lines(text_array, formatting = {})
         # Hold paragraphs to be inserted into, corresponding to the index of the strings in the text array
         paragraphs = []
         paragraph = self.parent_paragraph
@@ -45,7 +46,7 @@ module Docx
 
         # Insert text into corresponding newly created paragraphs
         paragraphs.each_index do |index|
-          paragraphs[index].text = text_array[index]
+          paragraphs[index].set_text(text_array[index], formatting)
         end
       end
 

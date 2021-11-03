@@ -1,5 +1,6 @@
 require 'docx/containers/text_run'
 require 'docx/containers/container'
+require 'docx/formatting/paragraph_formatting'
 
 module Docx
   module Elements
@@ -7,11 +8,13 @@ module Docx
       class Paragraph
         include Container
         include Elements::Element
+        include ParagraphFormatting
+
+        attr_reader :properties_tag
 
         def self.tag
           'p'
         end
-
 
         # Child elements: pPr, r, fldSimple, hlink, subDoc
         # http://msdn.microsoft.com/en-us/library/office/ee364458(v=office.11).aspx
@@ -36,10 +39,18 @@ module Docx
           end
         end
 
+        # Set text of paragraph with formatting
+        # 打补丁，使用 set_text 支持 formatting
+        def set_text(content, formatting = {})
+          self.text = content
+          text_runs.each { |tr| tr.apply_formatting(formatting) }
+        end
+
         # Return text of paragraph
         def to_s
           text_runs.map(&:text).join('')
         end
+        alias_method :text, :to_s
 
         # Return paragraph as a <p></p> HTML fragment with formatting based on properties.
         def to_html
@@ -79,15 +90,14 @@ module Docx
           size_tag = @node.xpath('w:pPr//w:sz').first
           size_tag ? size_tag.attributes['val'].value.to_i / 2 : @font_size
         end
-        
-        alias_method :text, :to_s
 
         private
 
         # Returns the alignment if any, or nil if left
         def alignment
-          alignment_tag = @node.xpath('.//w:jc').first
-          alignment_tag ? alignment_tag.attributes['val'].value : nil
+          # alignment_tag = @node.xpath('.//w:jc').first
+          # alignment_tag ? alignment_tag.attributes['val'].value : nil
+          formatting[:alignment]
         end
 
       end

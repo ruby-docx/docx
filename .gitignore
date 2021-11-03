@@ -5,3 +5,4 @@ pkg/*
 doc/
 vendor/
 coverage/
+.DS_Store
