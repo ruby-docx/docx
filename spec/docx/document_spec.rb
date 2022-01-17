@@ -299,6 +299,17 @@ describe Docx::Document do
       expect(text_runs[3].font_size).to eq 11
       expect(text_runs[4].font_size).to eq 11
     end
+
+    it 'should return changed value for runs' do
+      paragraph = @doc.paragraphs[10]
+      text_runs = paragraph.text_runs
+
+      tr = text_runs[0]
+      expect(tr.text).to eq 'This paragraph has a '
+
+      tr.text = 'This paragraph hasn\'t a'
+      expect(tr.text).to eq 'This paragraph hasn\'t a'
+    end
   end
 
   describe 'saving' do

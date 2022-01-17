@@ -12,14 +12,14 @@ module Docx
           bold:      false,
           underline: false
         }
-        
+
         def self.tag
           'r'
         end
 
         attr_reader :text
         attr_reader :formatting
-        
+
         def initialize(node, document_properties = {})
           @node = node
           @text_nodes = @node.xpath('w:t').map {|t_node| Elements::Text.new(t_node) }
@@ -40,6 +40,7 @@ module Docx
             new_t = Elements::Text.create_within(self)
             new_t.content = content
           end
+          reset_text
         end
 
         # Returns text contained within text run
@@ -52,6 +53,7 @@ module Docx
           @text_nodes.each do |text_node|
             text_node.content = text_node.content.gsub(match, replacement)
           end
+          reset_text
         end
 
         def parse_formatting
@@ -74,7 +76,7 @@ module Docx
           styles = {}
           styles['text-decoration'] = 'underline' if underlined?
           # No need to be granular with font size down to the span level if it doesn't vary.
-          styles['font-size'] = "#{font_size}pt" if font_size != @font_size 
+          styles['font-size'] = "#{font_size}pt" if font_size != @font_size
           html = html_tag(:span, content: html, styles: styles) unless styles.empty?
           html = html_tag(:a, content: html, attributes: {href: href, target: "_blank"}) if hyperlink?
           return html
@@ -83,11 +85,11 @@ module Docx
         def italicized?
           @formatting[:italic]
         end
-        
+
         def bolded?
           @formatting[:bold]
         end
-        
+
         def underlined?
           @formatting[:underline]
         end
@@ -102,11 +104,17 @@ module Docx
 
         def hyperlink_id
           @node.attributes['id'].value
-        end        
+        end
 
         def font_size
           size_tag = @node.xpath('w:rPr//w:sz').first
           size_tag ? size_tag.attributes['val'].value.to_i / 2 : @font_size
+        end
+
+        private
+
+        def reset_text
+          @text = parse_text
         end
       end
     end
