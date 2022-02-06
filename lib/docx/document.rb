@@ -70,6 +70,10 @@ module Docx
       bkmrks_hsh
     end
 
+    def to_xml
+      Nokogiri::XML(@document_xml)
+    end
+
     def tables
       @doc.xpath('//w:document//w:body//w:tbl').map { |t_node| parse_table_from t_node }
     end
