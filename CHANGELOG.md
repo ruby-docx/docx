@@ -1,5 +1,9 @@
 # Changelog
 
+### Bug fixes
+
+- Passing a Nokogiri::XML::Node as the second parameter to Node.new is deprecated [#121](https://github.com/ruby-docx/docx/pull/121)
+
 ## v0.6.2
 
 ### Bug fixes
