@@ -1,6 +1,11 @@
 # Changelog
 
-## v0.6.3
+## v0.7.0
+
+### Enhancements
+
+- Adds to_xml to Document [#116](https://github.com/ruby-docx/docx/pull/116)
+- fix runs text not changed after update [#120](https://github.com/ruby-docx/docx/pull/120)
 
 ### Bug fixes
 
