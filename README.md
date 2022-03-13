@@ -11,7 +11,7 @@ A ruby library/gem for interacting with `.docx` files. currently capabilities in
 
 ### Prerequisites
 
-- Ruby 2.5 or later
+- Ruby 2.6 or later
 
 ### Install
 
