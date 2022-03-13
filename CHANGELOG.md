@@ -1,8 +1,19 @@
 # Changelog
 
+## v0.7.0
+
+### Enhancements
+
+- Adds to_xml to Document [#116](https://github.com/ruby-docx/docx/pull/116)
+- fix runs text not changed after update [#120](https://github.com/ruby-docx/docx/pull/120)
+
 ### Bug fixes
 
 - Passing a Nokogiri::XML::Node as the second parameter to Node.new is deprecated [#121](https://github.com/ruby-docx/docx/pull/121)
+
+### Chores
+
+- Add Ruby 3.1 to the CI matrix by petergoldstein [#122](https://github.com/ruby-docx/docx/pull/122)
 
 ## v0.6.2
 
