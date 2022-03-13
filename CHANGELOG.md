@@ -1,8 +1,14 @@
 # Changelog
 
+## v0.6.3
+
 ### Bug fixes
 
 - Passing a Nokogiri::XML::Node as the second parameter to Node.new is deprecated [#121](https://github.com/ruby-docx/docx/pull/121)
+
+### Chores
+
+- Add Ruby 3.1 to the CI matrix by petergoldstein [#122](https://github.com/ruby-docx/docx/pull/122)
 
 ## v0.6.2
 
