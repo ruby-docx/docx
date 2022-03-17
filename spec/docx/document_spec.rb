@@ -7,7 +7,7 @@ require 'tempfile'
 describe Docx::Document do
   before(:all) do
     @fixtures_path = 'spec/fixtures'
-    @formatting_line_count = 13 # number of lines the formatting.docx file has
+    @formatting_line_count = 14 # number of lines the formatting.docx file has
   end
 
   describe '#open' do
@@ -189,7 +189,8 @@ describe Docx::Document do
       @only_italic = @default_formatting.merge italic: true
       @only_bold = @default_formatting.merge bold: true
       @only_underline = @default_formatting.merge underline: true
-      @all_formatted = @default_formatting.merge italic: true, bold: true, underline: true
+      @only_highlight = @default_formatting.merge highlight: 'yellow'
+      @all_formatted = @default_formatting.merge italic: true, bold: true, underline: true, highlight: 'yellow'
     end
 
     it 'should have the correct text' do
@@ -198,26 +199,28 @@ describe Docx::Document do
       expect(@doc.paragraphs[1].text).to eq('Italic')
       expect(@doc.paragraphs[2].text).to eq('Bold')
       expect(@doc.paragraphs[3].text).to eq('Underline')
-      expect(@doc.paragraphs[4].text).to eq('Normal')
-      expect(@doc.paragraphs[5].text).to eq('This is a sentence with all formatting options in the middle of the sentence.')
-      expect(@doc.paragraphs[6].text).to eq('This is a centered paragraph.')
-      expect(@doc.paragraphs[7].text).to eq('This paragraph is aligned left.')
-      expect(@doc.paragraphs[8].text).to eq('This paragraph is aligned right.')
-      expect(@doc.paragraphs[9].text).to eq('This paragraph is 14 points.')
-      expect(@doc.paragraphs[10].text).to eq('This paragraph has a word at 16 points.')
-      expect(@doc.paragraphs[11].text).to eq('This sentence has different formatting in different places.')
-      expect(@doc.paragraphs[12].text).to eq('This sentence has a hyperlink.')
+      expect(@doc.paragraphs[4].text).to eq('Highlight')
+      expect(@doc.paragraphs[5].text).to eq('Normal')
+      expect(@doc.paragraphs[6].text).to eq('This is a sentence with all formatting options in the middle of the sentence.')
+      expect(@doc.paragraphs[7].text).to eq('This is a centered paragraph.')
+      expect(@doc.paragraphs[8].text).to eq('This paragraph is aligned left.')
+      expect(@doc.paragraphs[9].text).to eq('This paragraph is aligned right.')
+      expect(@doc.paragraphs[10].text).to eq('This paragraph is 14 points.')
+      expect(@doc.paragraphs[11].text).to eq('This paragraph has a word at 16 points.')
+      expect(@doc.paragraphs[12].text).to eq('This sentence has different formatting in different places.')
+      expect(@doc.paragraphs[13].text).to eq('This sentence has a hyperlink.')
     end
 
     it 'should contain a paragraph with multiple text runs' do
     end
 
     it 'should detect normal formatting' do
-      [0, 4].each do |i|
+      [0, 5].each do |i|
         expect(@formatting[i][0]).to eq(@default_formatting)
         expect(@doc.paragraphs[i].text_runs[0].italicized?).to eq(false)
         expect(@doc.paragraphs[i].text_runs[0].bolded?).to eq(false)
         expect(@doc.paragraphs[i].text_runs[0].underlined?).to eq(false)
+        expect(@doc.paragraphs[i].text_runs[0].highlighted?).to eq(false)
       end
     end
 
@@ -226,6 +229,7 @@ describe Docx::Document do
       expect(@doc.paragraphs[1].text_runs[0].italicized?).to eq(true)
       expect(@doc.paragraphs[1].text_runs[0].bolded?).to eq(false)
       expect(@doc.paragraphs[1].text_runs[0].underlined?).to eq(false)
+      expect(@doc.paragraphs[1].text_runs[0].highlighted?).to eq(false)
     end
 
     it 'should detect bold formatting' do
@@ -233,6 +237,7 @@ describe Docx::Document do
       expect(@doc.paragraphs[2].text_runs[0].italicized?).to eq(false)
       expect(@doc.paragraphs[2].text_runs[0].bolded?).to eq(true)
       expect(@doc.paragraphs[2].text_runs[0].underlined?).to eq(false)
+      expect(@doc.paragraphs[2].text_runs[0].highlighted?).to eq(false)
     end
 
     it 'should detect underline formatting' do
@@ -240,41 +245,54 @@ describe Docx::Document do
       expect(@doc.paragraphs[3].text_runs[0].italicized?).to eq(false)
       expect(@doc.paragraphs[3].text_runs[0].bolded?).to eq(false)
       expect(@doc.paragraphs[3].text_runs[0].underlined?).to eq(true)
+      expect(@doc.paragraphs[3].text_runs[0].highlighted?).to eq(false)
+    end
+
+    it 'should detect highlight formatting' do
+      expect(@formatting[4][0]).to eq(@only_highlight)
+      expect(@doc.paragraphs[4].text_runs[0].italicized?).to eq(false)
+      expect(@doc.paragraphs[4].text_runs[0].bolded?).to eq(false)
+      expect(@doc.paragraphs[4].text_runs[0].underlined?).to eq(false)
+      expect(@doc.paragraphs[4].text_runs[0].highlighted?).to eq(true)
+      expect(@doc.paragraphs[4].text_runs[0].highlight).to eq('yellow')
     end
 
     it 'should detect mixed formatting' do
-      expect(@formatting[5][0]).to eq(@default_formatting)
-      expect(@doc.paragraphs[5].text_runs[0].italicized?).to eq(false)
-      expect(@doc.paragraphs[5].text_runs[0].bolded?).to eq(false)
-      expect(@doc.paragraphs[5].text_runs[0].underlined?).to eq(false)
+      expect(@formatting[6][0]).to eq(@default_formatting)
+      expect(@doc.paragraphs[6].text_runs[0].italicized?).to eq(false)
+      expect(@doc.paragraphs[6].text_runs[0].bolded?).to eq(false)
+      expect(@doc.paragraphs[6].text_runs[0].underlined?).to eq(false)
+      expect(@doc.paragraphs[6].text_runs[0].highlighted?).to eq(false)
 
-      expect(@formatting[5][1]).to eq(@all_formatted)
-      expect(@doc.paragraphs[5].text_runs[1].italicized?).to eq(true)
-      expect(@doc.paragraphs[5].text_runs[1].bolded?).to eq(true)
-      expect(@doc.paragraphs[5].text_runs[1].underlined?).to eq(true)
+      expect(@formatting[6][1]).to eq(@all_formatted)
+      expect(@doc.paragraphs[6].text_runs[1].italicized?).to eq(true)
+      expect(@doc.paragraphs[6].text_runs[1].bolded?).to eq(true)
+      expect(@doc.paragraphs[6].text_runs[1].underlined?).to eq(true)
+      expect(@doc.paragraphs[6].text_runs[1].highlight).to eq('yellow')
 
-      expect(@formatting[5][2]).to eq(@default_formatting)
-      expect(@doc.paragraphs[5].text_runs[2].italicized?).to eq(false)
-      expect(@doc.paragraphs[5].text_runs[2].bolded?).to eq(false)
-      expect(@doc.paragraphs[5].text_runs[2].underlined?).to eq(false)
+      expect(@formatting[6][2]).to eq(@default_formatting)
+      expect(@doc.paragraphs[6].text_runs[2].italicized?).to eq(false)
+      expect(@doc.paragraphs[6].text_runs[2].bolded?).to eq(false)
+      expect(@doc.paragraphs[6].text_runs[2].underlined?).to eq(false)
+      expect(@doc.paragraphs[6].text_runs[2].highlighted?).to eq(false)
     end
 
     it 'should detect centered paragraphs' do
-      expect(@doc.paragraphs[5].aligned_center?).to eq(false)
-      expect(@doc.paragraphs[6].aligned_center?).to eq(true)
-      expect(@doc.paragraphs[7].aligned_center?).to eq(false)
+      expect(@doc.paragraphs[6].aligned_center?).to eq(false)
+      expect(@doc.paragraphs[7].aligned_center?).to eq(true)
+      expect(@doc.paragraphs[8].aligned_center?).to eq(false)
     end
 
     it 'should detect left justified paragraphs' do
-      expect(@doc.paragraphs[6].aligned_left?).to eq(false)
-      expect(@doc.paragraphs[7].aligned_left?).to eq(true)
-      expect(@doc.paragraphs[8].aligned_left?).to eq(false)
+      expect(@doc.paragraphs[7].aligned_left?).to eq(false)
+      expect(@doc.paragraphs[8].aligned_left?).to eq(true)
+      expect(@doc.paragraphs[9].aligned_left?).to eq(false)
     end
 
     it 'should detect right justified paragraphs' do
-      expect(@doc.paragraphs[7].aligned_right?).to eq(false)
-      expect(@doc.paragraphs[8].aligned_right?).to eq(true)
-      expect(@doc.paragraphs[9].aligned_right?).to eq(false)
+      expect(@doc.paragraphs[8].aligned_right?).to eq(false)
+      expect(@doc.paragraphs[9].aligned_right?).to eq(true)
+      expect(@doc.paragraphs[10].aligned_right?).to eq(false)
     end
 
     # ECMA-376 Office Open XML spec (4th edition), 17.3.2.38, size is
@@ -282,15 +300,15 @@ describe Docx::Document do
     # http://www.ecma-international.org/publications/standards/Ecma-376.htm
     it 'should return proper font size for paragraphs' do
       expect(@doc.font_size).to eq 11
-      expect(@doc.paragraphs[5].font_size).to eq 11
-      paragraph = @doc.paragraphs[9]
+      expect(@doc.paragraphs[6].font_size).to eq 11
+      paragraph = @doc.paragraphs[10]
       expect(paragraph.font_size).to eq 14
       expect(paragraph.text_runs[0].font_size).to eq 14
     end
 
     it 'should return proper font size for runs' do
       expect(@doc.font_size).to eq 11
-      paragraph = @doc.paragraphs[10]
+      paragraph = @doc.paragraphs[11]
       expect(paragraph.font_size).to eq 11
       text_runs = paragraph.text_runs
       expect(text_runs[0].font_size).to eq 11
@@ -301,7 +319,7 @@ describe Docx::Document do
     end
 
     it 'should return changed value for runs' do
-      paragraph = @doc.paragraphs[10]
+      paragraph = @doc.paragraphs[11]
       text_runs = paragraph.text_runs
 
       tr = text_runs[0]
@@ -362,9 +380,9 @@ describe Docx::Document do
   describe 'outputting html' do
     before do
       @doc = Docx::Document.open(@fixtures_path + '/formatting.docx')
-      @formatted_line = @doc.paragraphs[5]
+      @formatted_line = @doc.paragraphs[6]
       @p_regex = /(^\<p).+((?<=\>)\w+)(\<\/p>$)/
-      @span_regex = /(\<span).+((?<=\>)\w+)(<\/span>)/
+      @span_regex = /(\<span).+?((?<=\>)\w+)(<\/span>)/
       @em_regex = /(\<em).+((?<=\>)\w+)(\<\/em\>)/
       @strong_regex = /(\<strong).+((?<=\>)\w+)(\<\/strong\>)/
       @anchor_tag_regex = /\<a href="(.+)" target="_blank"\>(.+)\<\/a>/
@@ -396,16 +414,21 @@ describe Docx::Document do
       expect(scan.first).to eq 'style="text-decoration:underline;"'
     end
 
+    it 'should highlight highlighted text' do
+      scan = @doc.paragraphs[4].to_html.scan(/\<span\s+([^\>]+)/).flatten
+      expect(scan.first).to eq 'style="background-color:yellow;"'
+    end
+
     it 'should justify paragraphs' do
       regex = /^<p[^\"]+.(?<=\")([^\"]+)/
-      expect(@doc.paragraphs[6].to_html.scan(regex).flatten.first.split(';').include?('text-align:center')).to eq(true)
-      expect(@doc.paragraphs[7].to_html.scan(regex).flatten.first.split(';').include?('text-align:left')).to eq(false)
-      expect(@doc.paragraphs[8].to_html.scan(regex).flatten.first.split(';').include?('text-align:right')).to eq(true)
+      expect(@doc.paragraphs[7].to_html.scan(regex).flatten.first.split(';').include?('text-align:center')).to eq(true)
+      expect(@doc.paragraphs[8].to_html.scan(regex).flatten.first.split(';').include?('text-align:left')).to eq(false)
+      expect(@doc.paragraphs[9].to_html.scan(regex).flatten.first.split(';').include?('text-align:right')).to eq(true)
     end
 
     it 'should set font size on styled paragraphs' do
       regex = /(\<p{1})[^\>]+style\=\"([^\"]+).+(<\/p>)/
-      scan = @doc.paragraphs[9].to_html.scan(regex).flatten
+      scan = @doc.paragraphs[10].to_html.scan(regex).flatten
       expect(scan.first).to eq '<p'
       expect(scan.last).to eq '</p>'
       expect(scan[1].split(';').include?('font-size:14pt')).to eq(true)
@@ -413,14 +436,14 @@ describe Docx::Document do
 
     it 'should set font size on styled text runs' do
       regex = /(\<span)[^\>]+style\=\"([^\"]+)[^\<]+(<\/span>)/
-      scan = @doc.paragraphs[10].to_html.scan(regex).flatten
+      scan = @doc.paragraphs[11].to_html.scan(regex).flatten
       expect(scan.first).to eq '<span'
       expect(scan.last).to eq '</span>'
       expect(scan[1].split(';').include?('font-size:16pt')).to eq(true)
     end
 
     it 'should properly highlight different text in different places in a sentence' do
-      paragraph = @doc.paragraphs[11]
+      paragraph = @doc.paragraphs[12]
       scan = paragraph.to_html.scan(@em_regex).flatten
       expect(scan.first).to eq '<em'
       expect(scan.last).to eq '</em>'
@@ -429,12 +452,16 @@ describe Docx::Document do
       expect(scan.first).to eq '<strong'
       expect(scan.last).to eq '</strong>'
       expect(scan[1]).to eq 'formatting'
-      scan = paragraph.to_html.scan(@span_regex).flatten
-      expect(scan.first).to eq '<span'
-      expect(scan.last).to eq '</span>'
-      expect(scan[1]).to eq 'different'
-      scan = paragraph.to_html.scan(/\<span\s+([^\>]+)/).flatten
-      expect(scan.first).to eq 'style="text-decoration:underline;"'
+      scan = paragraph.to_html.scan(@span_regex)
+      expect(scan[0].first).to eq '<span'
+      expect(scan[0].last).to eq '</span>'
+      expect(scan[1].first).to eq '<span'
+      expect(scan[1].last).to eq '</span>'
+      expect(scan[0][1]).to eq 'different'
+      expect(scan[1][1]).to eq 'places'
+      scan = paragraph.to_html.scan(/\<span\s+([^\>]+)/)
+      expect(scan[0].first).to eq 'style="text-decoration:underline;"'
+      expect(scan[1].first).to eq 'style="background-color:yellow;"'
     end
 
     it 'should output an entire document as html fragment' do
@@ -442,7 +469,7 @@ describe Docx::Document do
     end
 
     it 'should output styled html' do
-      expect(@formatted_line.to_html.scan('<span style="text-decoration:underline;"><strong><em>all</em></strong></span>').size).to eq 1
+      expect(@formatted_line.to_html.scan('<span style="text-decoration:underline;background-color:yellow;"><strong><em>all</em></strong></span>').size).to eq 1
     end
 
     it 'should join paragraphs with newlines' do
