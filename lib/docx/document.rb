@@ -124,39 +124,14 @@ module Docx
     #   save(filepath) => void
     def save(path)
       update
-      Zip::OutputStream.open(path) do |out|
-        zip.each do |entry|
-          next unless entry.file?
-
-          out.put_next_entry(entry.name)
-
-          if @replace[entry.name]
-            out.write(@replace[entry.name])
-          else
-            out.write(zip.read(entry.name))
-          end
-        end
-      end
+      Zip::OutputStream.open(path) { |out| write_to_stream(out) }
       zip.close
     end
 
     # Output entire document as a StringIO object
     def stream
       update
-      stream = Zip::OutputStream.write_buffer do |out|
-        zip.each do |entry|
-          next unless entry.file?
-
-          out.put_next_entry(entry.name)
-
-          if @replace[entry.name]
-            out.write(@replace[entry.name])
-          else
-            out.write(zip.read(entry.name))
-          end
-        end
-      end
-
+      stream = Zip::OutputStream.write_buffer { |out| write_to_stream(out) }
       stream.rewind
       stream
     end
@@ -167,7 +142,32 @@ module Docx
       @replace[entry_path] = file_contents
     end
 
+    def append_entry(entry_path, file_contents)
+      @append[entry_path] = file_contents
+    end
+
     private
+
+    def write_to_stream(out)
+      zip.each do |entry|
+        next unless entry.file?
+
+        out.put_next_entry(entry.name)
+
+        if @replace[entry.name]
+          out.write(@replace[entry.name])
+        else
+          out.write(zip.read(entry.name))
+        end
+      end
+
+      if @append.any?
+        @append.each do |entry_name, content|
+          out.put_next_entry(entry_name)
+          out.write(content)
+        end
+      end
+    end
 
     def load_styles
       @styles_xml = @zip.read('word/styles.xml')
