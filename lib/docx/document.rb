@@ -22,6 +22,7 @@ module Docx
 
     def initialize(path_or_io, options = {})
       @replace = {}
+      @append = {}
 
       # if path-or_io is string && does not contain a null byte
       if (path_or_io.instance_of?(String) && !/\u0000/.match?(path_or_io))
