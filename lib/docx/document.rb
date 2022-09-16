@@ -26,10 +26,11 @@ module Docx
       styles: "word/styles.xml",
       headers: "word/header*.xml",
       footers: "word/footer*.xml",
-      numbering: "word/numbering.xml"
+      numbering: "word/numbering.xml",
+      settings: "word/settings.xml"
     }
 
-    attr_reader :xml, :doc, :zip, :styles, :headers, :footers, :numbering
+    attr_reader :xml, :doc, :zip, :styles, :headers, :footers, :numbering, :settings
 
     def initialize(path, &block)
       @replace = {}

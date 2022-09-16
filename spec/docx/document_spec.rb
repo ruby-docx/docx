@@ -292,6 +292,7 @@ describe Docx::Document do
       expect(@doc.footers).to_not be_nil
       expect(@doc.footers["footer1"].text).to eq "Hello from the footer."
       expect(@doc.numbering).to_not be_nil
+      expect(@doc.settings).to_not be_nil
     end
   end
 
