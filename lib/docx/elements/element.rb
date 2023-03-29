@@ -14,11 +14,18 @@ module Docx
       end
 
       attr_accessor :node
-      delegate :at_xpath, :xpath, :to => :@node
 
       # TODO: Should create a docx object from this
       def parent(type = '*')
         @node.at_xpath("./parent::#{type}")
+      end
+
+      def at_xpath(*args)
+        @node.at_xpath(*args)
+      end
+
+      def xpath(*args)
+        @node.xpath(*args)
       end
 
       # Get parent paragraph of element
