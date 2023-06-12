@@ -37,8 +37,10 @@ module Docx
       @doc = Nokogiri::XML(@document_xml)
       load_styles
       yield(self) if block_given?
+    rescue Zip::Error => e
+      raise 'File not supported'
     ensure
-      @zip.close
+      @zip.close unless @zip.nil?
     end
 
     # This stores the current global document properties, for now
