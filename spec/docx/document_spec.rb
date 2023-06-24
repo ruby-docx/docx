@@ -18,6 +18,21 @@ describe Docx::Document do
         end.to_not raise_error
       end
     end
+
+    context 'When reading a un-supported file' do
+      it 'should throw file not supported error' do
+        expect do
+          Docx::Document.open(@fixtures_path + '/invalid_format.pdf')
+        end.to raise_error(Errno::EIO, 'Input/output error - Invalid file format')
+      end
+
+      it 'should throw file not found error' do
+        expect do
+          invalid_path = @fixtures_path + '/invalid_file_path.docx'
+          Docx::Document.open(invalid_path)
+        end.to raise_error(Zip::Error, "File #{invalid_path} not found")
+      end
+    end
   end
 
   describe 'reading' do
