@@ -25,6 +25,7 @@ module Docx
 
       # if path-or_io is string && does not contain a null byte
       if (path_or_io.instance_of?(String) && !/\u0000/.match?(path_or_io))
+        raise Errno::EIO.new('Invalid file format') if !File.extname(path_or_io).eql?('.docx')
         @zip = Zip::File.open(path_or_io)
       else
         @zip = Zip::File.open_buffer(path_or_io)
@@ -38,7 +39,7 @@ module Docx
       load_styles
       yield(self) if block_given?
     ensure
-      @zip.close
+      @zip.close unless @zip.nil?
     end
 
     # This stores the current global document properties, for now
