@@ -27,8 +27,8 @@ describe Docx::Document do
       end
 
       it 'should throw file not found error' do
+        invalid_path = @fixtures_path + '/invalid_file_path.docx'
         expect do
-          invalid_path = @fixtures_path + '/invalid_file_path.docx'
           Docx::Document.open(invalid_path)
         end.to raise_error(Zip::Error, "File #{invalid_path} not found")
       end
