@@ -504,4 +504,22 @@ describe Docx::Document do
       expect(doc.to_s).to be_a(String)
     end
   end
+
+  describe 'reading style' do
+    before do
+    @doc = Docx::Document.open(@fixtures_path + '/test_with_style.docx')
+    end
+
+    it 'read default style when not' do
+      nb = @doc.paragraphs.size
+      expect(nb).to eq 6
+      expect(@doc.paragraphs[0].style).to eq 'Normal'
+      expect(@doc.paragraphs[1].style).to eq 'STYLE1'
+      expect(@doc.paragraphs[2].style).to eq 'heading 1'
+      expect(@doc.paragraphs[3].style).to eq 'Normal'
+      expect(@doc.paragraphs[4].style).to eq 'Normal'
+      expect(@doc.paragraphs[5].style).to eq 'STYLE1'
+    end
+  end
+
 end
