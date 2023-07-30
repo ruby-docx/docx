@@ -22,6 +22,10 @@ module Docx
           @font_size = @document_properties[:font_size]
         end
 
+        def document=(doc)
+          @document = doc
+        end
+
         # Set text of paragraph
         def text=(content)
           if text_runs.size == 1
@@ -79,17 +83,30 @@ module Docx
           size_tag = @node.xpath('w:pPr//w:sz').first
           size_tag ? size_tag.attributes['val'].value.to_i / 2 : @font_size
         end
-        
+
+        def style
+          return nil unless @document
+
+          if style_property.nil?
+            @document.default_paragraph_style
+          else
+            @document.style_name(style_property.attributes['val'].value)
+          end
+        end
+
         alias_method :text, :to_s
 
         private
+
+        def style_property
+          properties&.at_xpath('w:pStyle')
+        end
 
         # Returns the alignment if any, or nil if left
         def alignment
           alignment_tag = @node.xpath('.//w:jc').first
           alignment_tag ? alignment_tag.attributes['val'].value : nil
         end
-
       end
     end
   end
