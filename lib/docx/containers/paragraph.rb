@@ -15,14 +15,11 @@ module Docx
 
         # Child elements: pPr, r, fldSimple, hlink, subDoc
         # http://msdn.microsoft.com/en-us/library/office/ee364458(v=office.11).aspx
-        def initialize(node, document_properties = {})
+        def initialize(node, document_properties = {}, doc = nil)
           @node = node
           @properties_tag = 'pPr'
           @document_properties = document_properties
           @font_size = @document_properties[:font_size]
-        end
-
-        def document=(doc)
           @document = doc
         end
 

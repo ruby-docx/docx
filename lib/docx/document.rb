@@ -210,9 +210,7 @@ module Docx
 
     # generate Elements::Containers::Paragraph from paragraph XML node
     def parse_paragraph_from(p_node)
-      p = Elements::Containers::Paragraph.new(p_node, document_properties)
-      p.document = self
-      p
+      Elements::Containers::Paragraph.new(p_node, document_properties, self)
     end
 
     # generate Elements::Bookmark from bookmark XML node

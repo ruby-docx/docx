@@ -507,7 +507,7 @@ describe Docx::Document do
 
   describe 'reading style' do
     before do
-    @doc = Docx::Document.open(@fixtures_path + '/test_with_style.docx')
+      @doc = Docx::Document.open(@fixtures_path + '/test_with_style.docx')
     end
 
     it 'read default style when not' do
