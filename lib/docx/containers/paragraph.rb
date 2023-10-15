@@ -15,11 +15,12 @@ module Docx
 
         # Child elements: pPr, r, fldSimple, hlink, subDoc
         # http://msdn.microsoft.com/en-us/library/office/ee364458(v=office.11).aspx
-        def initialize(node, document_properties = {})
+        def initialize(node, document_properties = {}, doc = nil)
           @node = node
           @properties_tag = 'pPr'
           @document_properties = document_properties
           @font_size = @document_properties[:font_size]
+          @document = doc
         end
 
         # Set text of paragraph
@@ -79,17 +80,30 @@ module Docx
           size_tag = @node.xpath('w:pPr//w:sz').first
           size_tag ? size_tag.attributes['val'].value.to_i / 2 : @font_size
         end
-        
+
+        def style
+          return nil unless @document
+
+          if style_property.nil?
+            @document.default_paragraph_style
+          else
+            @document.style_name(style_property.attributes['val'].value)
+          end
+        end
+
         alias_method :text, :to_s
 
         private
+
+        def style_property
+          properties&.at_xpath('w:pStyle')
+        end
 
         # Returns the alignment if any, or nil if left
         def alignment
           alignment_tag = @node.xpath('.//w:jc').first
           alignment_tag ? alignment_tag.attributes['val'].value : nil
         end
-
       end
     end
   end

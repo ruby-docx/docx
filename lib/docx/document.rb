@@ -168,6 +168,18 @@ module Docx
       @replace[entry_path] = file_contents
     end
 
+    def default_paragraph_style
+      s = @styles.at_xpath("w:styles/w:style[@w:type='paragraph' and @w:default='1']")
+      s = s.at_xpath('w:name')
+      s.attributes['val'].value
+    end
+
+    def style_name(style_id)
+      s = @styles.at_xpath("w:styles/w:style[@w:styleId='#{style_id}']")
+      s = s.at_xpath('w:name')
+      s.attributes['val'].value
+    end
+
     private
 
     def load_styles
@@ -198,7 +210,7 @@ module Docx
 
     # generate Elements::Containers::Paragraph from paragraph XML node
     def parse_paragraph_from(p_node)
-      Elements::Containers::Paragraph.new(p_node, document_properties)
+      Elements::Containers::Paragraph.new(p_node, document_properties, self)
     end
 
     # generate Elements::Bookmark from bookmark XML node
