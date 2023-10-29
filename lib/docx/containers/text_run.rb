@@ -95,7 +95,11 @@ module Docx
         end
 
         def hyperlink?
-          @node.name == 'hyperlink'
+          @node.name == 'hyperlink' && external_link?
+        end
+
+        def external_link?
+          !@node.attributes['id'].nil?
         end
 
         def href
