@@ -522,4 +522,13 @@ describe Docx::Document do
     end
   end
 
+  describe '#to_html' do
+    before do
+      @doc = Docx::Document.open(@fixtures_path + '/internal-links.docx')
+    end
+
+    it 'should not raise error' do
+      expect { @doc.to_html }.to_not raise_error
+    end
+  end
 end
