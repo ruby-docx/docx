@@ -111,8 +111,11 @@ module Docx
         end
 
         def font_size
-          size_tag = @node.xpath('w:rPr//w:sz').first
-          size_tag ? size_tag.attributes['val'].value.to_i / 2 : @font_size
+          size_attribute = @node.at_xpath('w:rPr//w:sz//@w:val')
+
+          return @font_size unless size_attribute
+
+          size_attribute.value.to_i / 2
         end
 
         private

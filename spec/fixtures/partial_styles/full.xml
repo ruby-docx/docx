@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<w:styles xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml">
+  <w:style w:type="paragraph" w:styleId="Red">
+    <w:name w:val="Red"/>
+    <w:next w:val="Red"/>
+    <w:pPr>
+      <w:keepNext w:val="0"/>
+      <w:keepLines w:val="0"/>
+      <w:pageBreakBefore w:val="0"/>
+      <w:widowControl w:val="1"/>
+      <w:shd w:val="clear" w:color="auto" w:fill="auto"/>
+      <w:suppressAutoHyphens w:val="0"/>
+      <w:bidi w:val="0"/>
+      <w:spacing w:before="0" w:after="200" w:line="240" w:lineRule="auto"/>
+      <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+      <w:jc w:val="left"/>
+      <w:outlineLvl w:val="9"/>
+    </w:pPr>
+    <w:rPr>
+      <w:rFonts w:ascii="Cambria" w:cs="Arial Unicode MS" w:hAnsi="Cambria" w:eastAsia="Arial Unicode MS"/>
+      <w:b w:val="1"/>
+      <w:bCs w:val="1"/>
+      <w:i w:val="0"/>
+      <w:iCs w:val="0"/>
+      <w:caps w:val="0"/>
+      <w:smallCaps w:val="0"/>
+      <w:strike w:val="0"/>
+      <w:dstrike w:val="0"/>
+      <w:outline w:val="0"/>
+      <w:color w:val="99403d"/>
+      <w:spacing w:val="0"/>
+      <w:kern w:val="0"/>
+      <w:position w:val="0"/>
+      <w:sz w:val="24"/>
+      <w:szCs w:val="24"/>
+      <w:u w:val="none" w:color="000000"/>
+      <w:shd w:val="nil" w:color="auto" w:fill="auto"/>
+      <w:vertAlign w:val="baseline"/>
+      <w:lang w:val="en-US"/>
+      <w14:textFill>
+        <w14:solidFill>
+          <w14:srgbClr w14:val="9A403E"/>
+        </w14:solidFill>
+      </w14:textFill>
+    </w:rPr>
+  </w:style>
+</w:styles>

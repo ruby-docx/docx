@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<w:styles xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml">
+  <w:style w:type="paragraph" w:styleId="MyCustomStyle">
+    <w:name w:val="MyCustomStyle"/>
+    <w:pPr>
+      <w:jc w:val="left"/> <!-- Aligns text to the left -->
+      <w:spacing w:after="200" w:line="276" w:lineRule="auto"/> <!-- Sets spacing after the paragraph and line spacing -->
+    </w:pPr>
+    <w:rPr>
+      <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/> <!-- Sets the font for ASCII and High ANSI characters -->
+      <w:b/> <!-- Makes the text bold -->
+      <w:sz w:val="24"/> <!-- Sets the font size (12pt, since OOXML measures font size in half-points) -->
+    </w:rPr>
+  </w:style>
+</w:styles>

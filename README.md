@@ -181,6 +181,24 @@ p_children = p_element.xpath("//child::*") # selects all children
 p_child = p_element.at_xpath("//child::*") # selects first child
 ```
 
+### Writing and Manipulating Styles
+``` ruby
+require 'docx'
+
+d = Docx::Document.open('example.docx')
+
+# see lib/docx/elements/style.rb for more attributes you can set!
+new_style = d.styles_config.add_style("Red", name: "Red", font_color: "FF0000", font_size: 20)
+new_style.bold = true
+
+d.paragraphs.each do |p|
+  p.style = "Red"
+end
+
+d.styles_config.remove_style("Red")
+```
+
+
 ## Development
 
 ### todo
@@ -188,5 +206,4 @@ p_child = p_element.at_xpath("//child::*") # selects first child
 * Calculate element formatting based on values present in element properties as well as properties inherited from parents
 * Default formatting of inserted elements to inherited values
 * Implement formattable elements.
-* Implement styles.
 * Easier multi-line text insertion at a single bookmark (inserting paragraph nodes after the one containing the bookmark)
