@@ -10,7 +10,8 @@ module Docx
         DEFAULT_FORMATTING = {
           italic:    false,
           bold:      false,
-          underline: false
+          underline: false,
+          highlight: 'none'
         }
 
         def self.tag
@@ -60,7 +61,8 @@ module Docx
           {
             italic:    !@node.xpath('.//w:i').empty?,
             bold:      !@node.xpath('.//w:b').empty?,
-            underline: !@node.xpath('.//w:u').empty?
+            underline: !@node.xpath('.//w:u').empty?,
+            highlight:  @node.xpath('.//w:highlight').first&.[]('w:val') || 'none'
           }
         end
 
@@ -75,6 +77,7 @@ module Docx
           html = html_tag(:strong, content: html) if bolded?
           styles = {}
           styles['text-decoration'] = 'underline' if underlined?
+          styles['background-color'] = highlight unless highlight == 'none'
           # No need to be granular with font size down to the span level if it doesn't vary.
           styles['font-size'] = "#{font_size}pt" if font_size != @font_size
           html = html_tag(:span, content: html, styles: styles) unless styles.empty?
@@ -92,6 +95,14 @@ module Docx
 
         def underlined?
           @formatting[:underline]
+        end
+
+        def highlighted?
+          @formatting[:highlight] != 'none'
+        end
+
+        def highlight
+          @formatting[:highlight]
         end
 
         def hyperlink?
