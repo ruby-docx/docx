@@ -12,7 +12,14 @@ module Docx
         @@attributes
       end
 
-      def self.attribute(name, *selectors, converter: Converters::DefaultValueConverter, validator: Validators::DefaultValidator)
+      def self.required_attributes
+        @@attributes.select { |a| a[:required] }
+      end
+
+      def self.attribute(name, *selectors, required: false, converter: Converters::DefaultValueConverter, validator: Validators::DefaultValidator)
+        @@attributes ||= []
+        @@attributes << {name: name, selectors: selectors, required: required, converter: converter, validator: validator}
+
         define_method(name) do
           selectors
             .lazy
@@ -22,14 +29,26 @@ module Docx
         end
 
         define_method("#{name}=") do |value|
-          validator.validate(value) || raise(Errors::StyleInvalidPropertyValue, "Invalid value for #{name}: #{value}")
+          (required && value.nil?) &&
+            raise(Errors::StyleRequiredPropertyValue, "Required value #{name}")
+
+          validator.validate(value) ||
+            raise(Errors::StyleInvalidPropertyValue, "Invalid value for #{name}: '#{value.nil? ? "nil" : value}'")
+
+          encoded_value = converter.encode(value)
 
           selectors.map do |attribute_xpath|
-            encoded_value = converter.encode(value).to_s
             if (existing_attribute = node.at_xpath(attribute_xpath))
-              existing_attribute.value = encoded_value
-              next value
+              if encoded_value.nil?
+                existing_attribute.remove
+              else
+                existing_attribute.value = encoded_value
+              end
+
+              next encoded_value
             end
+
+            next encoded_value if encoded_value.nil?
 
             node_xpath, attribute = attribute_xpath.split("/@")
 
@@ -40,7 +59,8 @@ module Docx
                   # find the child node
                   parent_node.at_xpath(child_xpath) ||
                     # or create the child node
-                    Nokogiri::XML::Node.new(child_xpath, parent_node).tap { |created_child_node| parent_node << created_child_node }
+                    Nokogiri::XML::Node.new(child_xpath, parent_node)
+                      .tap { |created_child_node| parent_node << created_child_node }
                 end
 
             created_node.set_attribute(attribute, encoded_value)
@@ -67,9 +87,9 @@ module Docx
 
       attr_accessor :node
 
-      attribute :id, "./@w:styleId"
-      attribute :name, "./w:name/@w:val", "./w:next/@w:val"
-      attribute :type, ".//@w:type"
+      attribute :id, "./@w:styleId", required: true
+      attribute :name, "./w:name/@w:val", "./w:next/@w:val", required: true
+      attribute :type, ".//@w:type", required: true, validator: Validators::ValueValidator.new("paragraph", "character", "table", "numbering")
       attribute :keep_next, "./w:pPr/w:keepNext/@w:val", converter: Converters::BooleanConverter
       attribute :keep_lines, "./w:pPr/w:keepLines/@w:val", converter: Converters::BooleanConverter
       attribute :page_break_before, "./w:pPr/w:pageBreakBefore/@w:val", converter: Converters::BooleanConverter
@@ -111,6 +131,16 @@ module Docx
       attribute :text_fill_color, "./w:rPr/w14:textFill/w14:solidFill/w14:srgbClr/@w14:val", validator: Validators::ColorValidator
       attribute :vertical_alignment, "./w:rPr/w:vertAlign/@w:val"
       attribute :lang, "./w:rPr/w:lang/@w:val"
+
+      def valid?
+        self.class.required_attributes.all? do |a|
+          validator = a[:validator]
+          attribute_name = a[:name]
+          attribute_value = self.send(attribute_name)
+
+          validator&.validate(attribute_value)
+        end
+      end
 
       def to_xml
         node.to_xml

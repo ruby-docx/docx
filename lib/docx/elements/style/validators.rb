@@ -15,6 +15,16 @@ module Docx
             value =~ COLOR_REGEX
           end
         end
+
+        class ValueValidator
+          def initialize(*values)
+            @values = values
+          end
+
+          def validate(value)
+            @values.include?(value)
+          end
+        end
       end
     end
   end

@@ -5,10 +5,8 @@ require 'docx'
 
 describe Docx::Elements::Style do
   let(:fixture_path) { Dir.pwd + "/spec/fixtures/partial_styles/full.xml" }
-
-  let(:node) do
-    Nokogiri::XML(File.open(fixture_path)).root.children[1]
-  end
+  let(:fixture_xml) { File.read(fixture_path) }
+  let(:node) { Nokogiri::XML(fixture_xml).root.children[1] }
   let(:style) { described_class.new(double(:configuration), node) }
 
   it "should extract attributes" do
@@ -83,6 +81,14 @@ describe Docx::Elements::Style do
     expect(node.at_xpath("./w:rPr/w:shd/@w:val").value).to eq("complex")
   end
 
+  it "should allow setting attributes to nil" do
+    style.shading_style = nil
+
+    expect(style.shading_style).to eq(nil)
+    expect(node.at_xpath("./w:pPr/w:shd/@w:val")).to eq(nil)
+    expect { node.at_xpath("./w:pPr/w:shd/@w:val").value }.to raise_error(NoMethodError) # i.e. it's gone!
+  end
+
   describe "#to_xml" do
     it "should return the node as XML" do
       expect(style.to_xml).to eq(node.to_xml)
@@ -97,6 +103,46 @@ describe Docx::Elements::Style do
       expect(style.to_xml).to include('<w:name w:val="Blue"/>')
       expect(style.to_xml).to include('<w:next w:val="Blue"/>')
     end
+  end
+
+  describe "validation" do
+    let(:fixture_path) { Dir.pwd + "/spec/fixtures/partial_styles/basic.xml" }
+
+    it "validation: id" do
+      expect { style.id = nil }.to raise_error(Docx::Errors::StyleRequiredPropertyValue)
+    end
+
+    it "validation: name" do
+      expect { style.name = nil }.to raise_error(Docx::Errors::StyleRequiredPropertyValue)
+    end
+
+    it "validation: type" do
+      expect { style.type = nil }.to raise_error(Docx::Errors::StyleRequiredPropertyValue)
+
+      expect { style.type = "invalid" }.to raise_error(Docx::Errors::StyleInvalidPropertyValue)
+    end
+
+    it "true" do
+      expect(style).to be_valid
+    end
+
+    describe "unhappy" do
+      let(:fixture_xml) do
+        <<~XML
+        <?xml version="1.0" encoding="UTF-8"?>
+        <w:styles xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml">
+          <w:style w:type="" w:styleId="">
+            <w:name/>
+          </w:style>
+        </w:styles>
+        XML
+      end
+
+      it "false" do
+        expect(style).to_not be_valid
+      end
+    end
+
   end
 
   describe "basic" do
