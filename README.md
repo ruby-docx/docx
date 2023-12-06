@@ -186,11 +186,11 @@ p_child = p_element.at_xpath("//child::*") # selects first child
 require 'docx'
 
 d = Docx::Document.open('example.docx')
-existing_style = d.styles_config.style_of("Heading 1")
+existing_style = d.styles_configuration.style_of("Heading 1")
 existing_style.font_color = "000000"
 
 # see attributes below
-new_style = d.styles_config.add_style("Red", name: "Red", font_color: "FF0000", font_size: 20)
+new_style = d.styles_configuration.add_style("Red", name: "Red", font_color: "FF0000", font_size: 20)
 new_style.bold = true
 
 d.paragraphs.each do |p|
@@ -201,7 +201,7 @@ d.paragraphs.each do |p|
   p.style = "Heading 1"
 end
 
-d.styles_config.remove_style("Red")
+d.styles_configuration.remove_style("Red")
 ```
 
 #### Style Attributes
