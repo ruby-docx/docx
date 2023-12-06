@@ -98,6 +98,7 @@ describe Docx::Elements::Style do
       style.id = "blue"
       style.name = "Blue"
       style.font_size = 20
+      style.font_color = "0000FF"
 
       expect(style.to_xml).to eq(node.to_xml)
       expect(style.to_xml).to include('<w:style w:type="paragraph" w:styleId="blue">')
@@ -105,6 +106,7 @@ describe Docx::Elements::Style do
       expect(style.to_xml).to include('<w:next w:val="Blue"/>')
       expect(style.to_xml).to include('<w:sz w:val="40"/>')
       expect(style.to_xml).to include('<w:szCs w:val="40"/>')
+      expect(style.to_xml).to include('<w:color w:val="0000FF"/>')
     end
   end
 

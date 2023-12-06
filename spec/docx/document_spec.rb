@@ -610,15 +610,24 @@ describe Docx::Document do
       expect(@doc.default_paragraph_style).to eq 'Normal'
     end
 
-    it 'reads document styles' do
+    it 'manipulates existing document styles' do
       styles_config = @doc.styles_configuration
 
       expect(styles_config.size).to eq 37
 
-      expect(styles_config.style_of('Normal')).to be_a(Docx::Elements::Style)
+      heading_style = styles_config.style_of('Normal')
+      expect(heading_style).to be_a(Docx::Elements::Style)
+
+      expect(heading_style.id).to eq "Normal"
+      expect(heading_style.font_color).to eq(nil)
+
+      heading_style.font_color = "000000"
+      expect(heading_style.font_color).to eq("000000")
+
+      expect(heading_style.node.at_xpath("w:rPr/w:color/@w:val").value).to eq("000000")
     end
 
-    it 'manipulates document styles' do
+    it 'creates document styles' do
       styles_config = @doc.styles_configuration
 
       expect(styles_config.size).to eq 37
