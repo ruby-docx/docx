@@ -124,7 +124,7 @@ module Docx
       attribute :font_size, "./w:rPr/w:sz/@w:val", "./w:rPr/w:szCs/@w:val", converter: Converters::FontSizeConverter
       attribute :font_size_cs, "./w:rPr/w:szCs/@w:val", converter: Converters::FontSizeConverter
       attribute :underline_style, "./w:rPr/w:u/@w:val"
-      attribute :underline_color, "./w:rPr/w:u /@w:color", validator: Validators::ColorValidator
+      attribute :underline_color, "./w:rPr/w:u/@w:color", validator: Validators::ColorValidator
       attribute :spacing, "./w:rPr/w:spacing/@w:val"
       attribute :kerning, "./w:rPr/w:kern/@w:val"
       attribute :position, "./w:rPr/w:position/@w:val"
