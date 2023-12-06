@@ -42,7 +42,7 @@ module Docx
               if encoded_value.nil?
                 existing_attribute.remove
               else
-                existing_attribute.value = encoded_value
+                existing_attribute.value = encoded_value.to_s
               end
 
               next encoded_value

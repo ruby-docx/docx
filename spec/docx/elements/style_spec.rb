@@ -97,11 +97,14 @@ describe Docx::Elements::Style do
     it "should change underlying XML when attributes are changed" do
       style.id = "blue"
       style.name = "Blue"
+      style.font_size = 20
 
       expect(style.to_xml).to eq(node.to_xml)
       expect(style.to_xml).to include('<w:style w:type="paragraph" w:styleId="blue">')
       expect(style.to_xml).to include('<w:name w:val="Blue"/>')
       expect(style.to_xml).to include('<w:next w:val="Blue"/>')
+      expect(style.to_xml).to include('<w:sz w:val="40"/>')
+      expect(style.to_xml).to include('<w:szCs w:val="40"/>')
     end
   end
 
