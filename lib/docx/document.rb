@@ -6,7 +6,7 @@ require 'nokogiri'
 require 'zip'
 
 module Docx
-  # The Document class wraps around a docx file and pro.es methods to
+  # The Document class wraps around a docx file and provides methods to
   # interface with it.
   #
   #   # get a Docx::Document for a docx file in the local directory
