@@ -54,6 +54,18 @@ describe Docx::Document do
     end
   end
 
+  describe 'read headers' do
+    before do
+      @doc = Docx::Document.open(@fixtures_path + '/multi_doc.docx')
+    end
+
+    it 'can extract headers' do
+      expect(@doc.headers).to_not be_nil
+      expect(@doc.headers.keys).to eq ["header1"]
+      expect(@doc.headers["header1"].text).to eq "Hello from the header."
+    end
+  end
+
   describe 'read tables' do
     before do
       @doc = Docx::Document.open(@fixtures_path + '/tables.docx')
