@@ -49,6 +49,7 @@ module Docx
             html << text_run.to_html
           end
           styles = { 'font-size' => "#{font_size}pt" }
+          styles['color'] = "##{font_color}" if font_color
           styles['text-align'] = alignment if alignment
           html_tag(:p, content: html, styles: styles)
         end
@@ -79,6 +80,11 @@ module Docx
         def font_size
           size_tag = @node.xpath('w:pPr//w:sz').first
           size_tag ? size_tag.attributes['val'].value.to_i / 2 : @font_size
+        end
+
+        def font_color
+          color_tag = @node.xpath('w:r//w:rPr//w:color').first
+          color_tag ? color_tag.attributes['val'].value : nil
         end
 
         def style

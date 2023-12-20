@@ -7,7 +7,7 @@ require 'tempfile'
 describe Docx::Document do
   before(:all) do
     @fixtures_path = 'spec/fixtures'
-    @formatting_line_count = 13 # number of lines the formatting.docx file has
+    @formatting_line_count = 15 # number of lines the formatting.docx file has
   end
 
   describe '#open' do
@@ -382,6 +382,7 @@ describe Docx::Document do
       @span_regex = /(\<span).+((?<=\>)\w+)(<\/span>)/
       @em_regex = /(\<em).+((?<=\>)\w+)(\<\/em\>)/
       @strong_regex = /(\<strong).+((?<=\>)\w+)(\<\/strong\>)/
+      @strike_regex = /(\<s).+((?<=\>)\w+)(\<\/s\>)/
       @anchor_tag_regex = /\<a href="(.+)" target="_blank"\>(.+)\<\/a>/
     end
 
@@ -409,6 +410,18 @@ describe Docx::Document do
     it 'should underline underlined text' do
       scan = @doc.paragraphs[3].to_html.scan(/\<span\s+([^\>]+)/).flatten
       expect(scan.first).to eq 'style="text-decoration:underline;"'
+    end
+
+    it 'should strike striked text' do
+      scan = @doc.paragraphs[13].to_html.scan(@strike_regex).flatten
+      expect(scan.first).to eq '<s'
+      expect(scan.last).to eq '</s>'
+      expect(scan[1]).to eq 'Strike'
+    end
+
+    it 'should color the text' do
+      scan = @doc.paragraphs[14].to_html.scan(/\<p\s+([^\>]+)/).flatten
+      expect(scan.first).to eq 'style="font-size:11pt;color:#FF0000;"'
     end
 
     it 'should justify paragraphs' do

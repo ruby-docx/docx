@@ -10,7 +10,8 @@ module Docx
         DEFAULT_FORMATTING = {
           italic:    false,
           bold:      false,
-          underline: false
+          underline: false,
+          strike: false
         }
 
         def self.tag
@@ -60,7 +61,8 @@ module Docx
           {
             italic:    !@node.xpath('.//w:i').empty?,
             bold:      !@node.xpath('.//w:b').empty?,
-            underline: !@node.xpath('.//w:u').empty?
+            underline: !@node.xpath('.//w:u').empty?,
+            strike: !@node.xpath('.//w:strike').empty?
           }
         end
 
@@ -73,6 +75,7 @@ module Docx
           html = @text
           html = html_tag(:em, content: html) if italicized?
           html = html_tag(:strong, content: html) if bolded?
+          html = html_tag(:s, content: html) if striked?
           styles = {}
           styles['text-decoration'] = 'underline' if underlined?
           # No need to be granular with font size down to the span level if it doesn't vary.
@@ -88,6 +91,10 @@ module Docx
 
         def bolded?
           @formatting[:bold]
+        end
+
+        def striked?
+          @formatting[:strike]
         end
 
         def underlined?
