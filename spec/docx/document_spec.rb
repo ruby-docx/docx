@@ -35,6 +35,18 @@ describe Docx::Document do
     end
   end
 
+  describe "#inspect" do
+    it "isn't too long" do
+      doc = Docx::Document.open(@fixtures_path + '/office365.docx')
+
+      expect(doc.inspect.length).to be < 1000
+
+      doc.instance_variables.each do |var|
+        expect(doc.inspect).to match(/#{var}/)
+      end
+    end
+  end
+
   describe 'reading' do
     context 'using normal file' do
       before do
@@ -347,12 +359,15 @@ describe Docx::Document do
 
     context 'wps modified docx file' do
       before { @doc = Docx::Document.open(@fixtures_path + '/saving_wps.docx') }
+
       it 'should save to a normal file path' do
         @new_doc_path = @fixtures_path + '/new_save.docx'
         @doc.save(@new_doc_path)
         @new_doc = Docx::Document.open(@new_doc_path)
         expect(@new_doc.paragraphs.size).to eq(@doc.paragraphs.size)
       end
+
+      after { File.delete(@new_doc_path) if File.exist?(@new_doc_path) }
     end
   end
 
@@ -518,21 +533,160 @@ describe Docx::Document do
     end
   end
 
-  describe 'reading style' do
+  describe 'reading and manipulating paragraph style' do
     before do
-      @doc = Docx::Document.open(@fixtures_path + '/test_with_style.docx')
+      @doc = Docx::Document.open(@fixtures_path + '/styles.docx')
     end
 
     it 'read default style when not' do
       nb = @doc.paragraphs.size
-      expect(nb).to eq 6
-      expect(@doc.paragraphs[0].style).to eq 'Normal'
-      expect(@doc.paragraphs[1].style).to eq 'STYLE1'
-      expect(@doc.paragraphs[2].style).to eq 'heading 1'
-      expect(@doc.paragraphs[3].style).to eq 'Normal'
-      expect(@doc.paragraphs[4].style).to eq 'Normal'
-      expect(@doc.paragraphs[5].style).to eq 'STYLE1'
+
+      expect(@doc.paragraphs.map(&:style)).to eq([
+        "Title",
+        "Subtitle",
+        "Author",
+        "Date",
+        "Compact",
+        "Heading 1",
+        "Heading 2",
+        "Heading 3",
+        "Heading 4",
+        "Heading 5",
+        "Heading 6",
+        "Heading 7",
+        "Heading 8",
+        "Heading 9",
+        "First Paragraph",
+        "Body Text",
+        "Block Text",
+        "Table Caption",
+        "Image Caption",
+        "Definition Term",
+        "Definition",
+        "Definition Term",
+        "Definition",
+      ])
+
+      expect(@doc.paragraphs.map(&:style_id)).to eq([
+        "Title",
+        "Subtitle",
+        "Author",
+        "Date",
+        "Compact",
+        "Heading1",
+        "Heading2",
+        "Heading3",
+        "Heading4",
+        "Heading5",
+        "Heading6",
+        "Heading7",
+        "Heading8",
+        "Heading9",
+        "FirstParagraph",
+        "BodyText",
+        "BlockText",
+        "TableCaption",
+        "ImageCaption",
+        "DefinitionTerm",
+        "Definition",
+        "DefinitionTerm",
+        "Definition",
+      ])
     end
+
+    it 'set paragraph style' do
+      nb = @doc.paragraphs.size
+      expect(nb).to eq 23
+
+      @doc.paragraphs.each do |p|
+        p.style = 'Heading 1'
+        expect(p.style).to eq 'Heading 1'
+      end
+
+      @doc.paragraphs.each do |p|
+        p.style_id = 'Heading2'
+        expect(p.style).to eq 'Heading 2'
+      end
+    end
+
+    it 'raises if invalid paragraph style' do
+      expect { @doc.paragraphs.first.style = 'invalid' }.to raise_error(Docx::Errors::StyleNotFound)
+    end
+  end
+
+  describe 'reading and manipulating document styles' do
+    before do
+      @doc = Docx::Document.open(@fixtures_path + '/styles.docx')
+    end
+
+    it '#default_paragraphy_style' do
+      expect(@doc.default_paragraph_style).to eq 'Normal'
+    end
+
+    it 'manipulates existing document styles' do
+      styles_config = @doc.styles_configuration
+
+      expect(styles_config.size).to eq 37
+
+      heading_style = styles_config.style_of('Normal')
+      expect(heading_style).to be_a(Docx::Elements::Style)
+
+      expect(heading_style.id).to eq "Normal"
+      expect(heading_style.font_color).to eq(nil)
+
+      heading_style.font_color = "000000"
+      expect(heading_style.font_color).to eq("000000")
+
+      expect(heading_style.node.at_xpath("w:rPr/w:color/@w:val").value).to eq("000000")
+    end
+
+    it 'creates document styles' do
+      styles_config = @doc.styles_configuration
+
+      expect(styles_config.size).to eq 37
+      expect { styles_config.style_of('Red') } .to raise_error(Docx::Errors::StyleNotFound)
+
+      red_style = styles_config.add_style("Red")
+      expect(styles_config.size).to eq 38
+
+      expect(red_style).to be_a(Docx::Elements::Style)
+      expect(red_style.id).to eq "Red"
+      expect(red_style.name).to eq "Red"
+
+      expect { red_style.font_color = "#FFFFFF" }.to raise_error(Docx::Errors::StyleInvalidPropertyValue)
+      expect { red_style.font_color = "blue" }.to raise_error(Docx::Errors::StyleInvalidPropertyValue)
+      expect { red_style.font_color = "FF0000" }.not_to raise_error
+
+      styles_config.remove_style("Red")
+      expect(styles_config.size).to eq 37
+      expect { styles_config.style_of('Red') }.to raise_error(Docx::Errors::StyleNotFound)
+    end
+
+    it 'persists document styles' do
+      styles_config = @doc.styles_configuration
+      styles_config.add_style("Red", name: "Red", font_color: "FF0000", font_size: 20)
+      @doc.paragraphs[5].style = "Red"
+
+      first_modified_styles_path = @fixtures_path + '/styles_modified.docx'
+      second_modified_styles_path = @fixtures_path + '/styles_modified2.docx'
+      @doc.save(first_modified_styles_path)
+
+      modified_styles_doc = Docx::Document.open(first_modified_styles_path)
+      modified_styles_config = modified_styles_doc.styles_configuration
+
+      expect(modified_styles_config.style_of('Red')).to be_a(Docx::Elements::Style)
+      modified_styles_config.remove_style("Red")
+      modified_styles_doc.save(second_modified_styles_path)
+
+      modified_styles_doc = Docx::Document.open(second_modified_styles_path)
+      modified_styles_config = modified_styles_doc.styles_configuration
+      expect { modified_styles_config.style_of('Red') }.to raise_error(Docx::Errors::StyleNotFound)
+
+      File.delete(first_modified_styles_path)
+      File.delete(second_modified_styles_path)
+    end
+
+    after { File.delete(@new_doc_path) if @new_doc_path && File.exist?(@new_doc_path) }
   end
 
   describe '#to_html' do

@@ -181,6 +181,78 @@ p_children = p_element.xpath("//child::*") # selects all children
 p_child = p_element.at_xpath("//child::*") # selects first child
 ```
 
+### Writing and Manipulating Styles
+``` ruby
+require 'docx'
+
+d = Docx::Document.open('example.docx')
+existing_style = d.styles_configuration.style_of("Heading 1")
+existing_style.font_color = "000000"
+
+# see attributes below
+new_style = d.styles_configuration.add_style("Red", name: "Red", font_color: "FF0000", font_size: 20)
+new_style.bold = true
+
+d.paragraphs.each do |p|
+  p.style = "Red"
+end
+
+d.paragraphs.each do |p|
+  p.style = "Heading 1"
+end
+
+d.styles_configuration.remove_style("Red")
+```
+
+#### Style Attributes
+
+The following is a list of attributes and what they control within the style.
+
+- **id**: The unique identifier of the style. (required)
+- **name**: The human-readable name of the style. (required)
+- **type**: Indicates the type of the style (e.g., paragraph, character).
+- **keep_next**: Boolean value controlling whether to keep a paragraph and the next one on the same page. Valid values: `true`/`false`.
+- **keep_lines**: Boolean value specifying whether to keep all lines of a paragraph together on one page. Valid values: `true`/`false`.
+- **page_break_before**: Boolean value indicating whether to insert a page break before the paragraph. Valid values: `true`/`false`.
+- **widow_control**: Boolean value controlling widow and orphan lines in a paragraph. Valid values: `true`/`false`.
+- **shading_style**: Defines the shading pattern style.
+- **shading_color**: Specifies the color of the shading pattern. Valid values: Hex color codes.
+-  **shading_fill**: Indicates the background fill color of shading.
+-  **suppress_auto_hyphens**: Boolean value controlling automatic hyphenation. Valid values: `true`/`false`.
+-  **bidirectional_text**: Boolean value indicating if the paragraph contains bidirectional text. Valid values: `true`/`false`.
+-  **spacing_before**: Defines the spacing before a paragraph.
+-  **spacing_after**: Specifies the spacing after a paragraph.
+-  **line_spacing**: Indicates the line spacing of a paragraph.
+-  **line_rule**: Defines how line spacing is calculated.
+-  **indent_left**: Sets the left indentation of a paragraph.
+-  **indent_right**: Specifies the right indentation of a paragraph.
+-  **indent_first_line**: Indicates the first line indentation of a paragraph.
+-  **align**: Controls the text alignment within a paragraph.
+-  **font**: Sets the font for different scripts (ASCII, complex script, East Asian, etc.).
+-  **font_ascii**: Specifies the font for ASCII characters.
+-  **font_cs**: Indicates the font for complex script characters.
+-  **font_hAnsi**: Sets the font for high ANSI characters.
+-  **font_eastAsia**: Specifies the font for East Asian characters.
+-  **bold**: Boolean value controlling bold formatting. Valid values: `true`/`false`.
+-  **italic**: Boolean value indicating italic formatting. Valid values: `true`/`false`.
+-  **caps**: Boolean value controlling capitalization. Valid values: `true`/`false`.
+-  **small_caps**: Boolean value specifying small capital letters. Valid values: `true`/`false`.
+-  **strike**: Boolean value indicating strikethrough formatting. Valid values: `true`/`false`.
+-  **double_strike**: Boolean value defining double strikethrough formatting. Valid values: `true`/`false`.
+-  **outline**: Boolean value specifying outline effects. Valid values: `true`/`false`.
+-  **outline_level**: Indicates the outline level in a document's hierarchy.
+-  **font_color**: Sets the text color. Valid values: Hex color codes.
+-  **font_size**: Controls the font size.
+-  **font_size_cs**: Specifies the font size for complex script characters.
+-  **underline_style**: Indicates the style of underlining.
+-  **underline_color**: Specifies the color of the underline. Valid values: Hex color codes.
+-  **spacing**: Controls character spacing.
+-  **kerning**: Sets the space between characters.
+-  **position**: Controls the position of characters (superscript/subscript).
+-  **text_fill_color**: Sets the fill color of text. Valid values: Hex color codes.
+-  **vertical_alignment**: Controls the vertical alignment of text within a line.
+-  **lang**: Specifies the language tag for the text.
+
 ## Development
 
 ### todo
@@ -188,5 +260,4 @@ p_child = p_element.at_xpath("//child::*") # selects first child
 * Calculate element formatting based on values present in element properties as well as properties inherited from parents
 * Default formatting of inserted elements to inherited values
 * Implement formattable elements.
-* Implement styles.
 * Easier multi-line text insertion at a single bookmark (inserting paragraph nodes after the one containing the bookmark)
