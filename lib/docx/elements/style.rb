@@ -8,72 +8,73 @@ module Docx
     class Style
       include Docx::SimpleInspect
 
-      def self.attributes
-        @@attributes
-      end
+      @attributes = []
 
-      def self.required_attributes
-        @@attributes.select { |a| a[:required] }
-      end
+      class << self
+        attr_accessor :attributes
 
-      def self.attribute(name, *selectors, required: false, converter: Converters::DefaultValueConverter, validator: Validators::DefaultValidator)
-        @@attributes ||= []
-        @@attributes << {name: name, selectors: selectors, required: required, converter: converter, validator: validator}
-
-        define_method(name) do
-          selectors
-            .lazy
-            .filter_map { |node_xpath| node.at_xpath(node_xpath)&.value }
-            .map { |value| converter.decode(value) }
-            .first
+        def required_attributes
+          attributes.select { |a| a[:required] }
         end
 
-        define_method("#{name}=") do |value|
-          (required && value.nil?) &&
-            raise(Errors::StyleRequiredPropertyValue, "Required value #{name}")
+        def attribute(name, *selectors, required: false, converter: Converters::DefaultValueConverter, validator: Validators::DefaultValidator)
+          attributes << {name: name, selectors: selectors, required: required, converter: converter, validator: validator}
 
-          validator.validate(value) ||
-            raise(Errors::StyleInvalidPropertyValue, "Invalid value for #{name}: '#{value.nil? ? "nil" : value}'")
+          define_method(name) do
+            selectors
+              .lazy
+              .filter_map { |node_xpath| node.at_xpath(node_xpath)&.value }
+              .map { |value| converter.decode(value) }
+              .first
+          end
 
-          encoded_value = converter.encode(value)
+          define_method("#{name}=") do |value|
+            (required && value.nil?) &&
+              raise(Errors::StyleRequiredPropertyValue, "Required value #{name}")
 
-          selectors.map do |attribute_xpath|
-            if (existing_attribute = node.at_xpath(attribute_xpath))
-              if encoded_value.nil?
-                existing_attribute.remove
-              else
-                existing_attribute.value = encoded_value.to_s
-              end
+            validator.validate(value) ||
+              raise(Errors::StyleInvalidPropertyValue, "Invalid value for #{name}: '#{value.nil? ? "nil" : value}'")
 
-              next encoded_value
-            end
+            encoded_value = converter.encode(value)
 
-            next encoded_value if encoded_value.nil?
-
-            node_xpath, attribute = attribute_xpath.split("/@")
-
-            created_node =
-              node_xpath
-                .split("/")
-                .reduce(node) do |parent_node, child_xpath|
-                  # find the child node
-                  parent_node.at_xpath(child_xpath) ||
-                    # or create the child node
-                    Nokogiri::XML::Node.new(child_xpath, parent_node)
-                      .tap { |created_child_node| parent_node << created_child_node }
+            selectors.map do |attribute_xpath|
+              if (existing_attribute = node.at_xpath(attribute_xpath))
+                if encoded_value.nil?
+                  existing_attribute.remove
+                else
+                  existing_attribute.value = encoded_value.to_s
                 end
 
-            created_node.set_attribute(attribute, encoded_value)
+                next encoded_value
+              end
+
+              next encoded_value if encoded_value.nil?
+
+              node_xpath, attribute = attribute_xpath.split("/@")
+
+              created_node =
+                node_xpath
+                  .split("/")
+                  .reduce(node) do |parent_node, child_xpath|
+                    # find the child node
+                    parent_node.at_xpath(child_xpath) ||
+                      # or create the child node
+                      Nokogiri::XML::Node.new(child_xpath, parent_node)
+                        .tap { |created_child_node| parent_node << created_child_node }
+                  end
+
+              created_node.set_attribute(attribute, encoded_value)
+            end
+              .first
           end
-            .first
         end
-      end
 
-      def self.create(configuration, attributes = {})
-        node = Nokogiri::XML::Node.new("w:style", configuration.styles_parent_node)
-        configuration.styles_parent_node.add_child(node)
+        def create(configuration, attributes = {})
+          node = Nokogiri::XML::Node.new("w:style", configuration.styles_parent_node)
+          configuration.styles_parent_node.add_child(node)
 
-        Elements::Style.new(configuration, node, **attributes)
+          Elements::Style.new(configuration, node, **attributes)
+        end
       end
 
       def initialize(configuration, node, **attributes)
