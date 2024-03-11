@@ -8,64 +8,89 @@ module Docx
     class Style
       include Docx::SimpleInspect
 
+      class Attribute
+        attr_reader :name, :selectors, :required, :converter, :validator
+
+        def initialize(name, selectors, required: false, converter:, validator:)
+          @name = name
+          @selectors = selectors
+          @required = required
+          @converter = converter || Converters::DefaultValueConverter
+          @validator = validator || Validators::DefaultValidator
+        end
+
+        def required?
+          required
+        end
+
+        def retrieve_from(style)
+          selectors
+            .lazy
+            .filter_map { |node_xpath| style.node.at_xpath(node_xpath)&.value }
+            .map { |value| converter.decode(value) }
+            .first
+        end
+
+        def assign_to(style, value)
+          (required && value.nil?) &&
+            raise(Errors::StyleRequiredPropertyValue, "Required value #{name}")
+
+          validator.validate(value) ||
+            raise(Errors::StyleInvalidPropertyValue, "Invalid value for #{name}: '#{value.nil? ? "nil" : value}'")
+
+          encoded_value = converter.encode(value)
+
+          selectors.map do |attribute_xpath|
+            if (existing_attribute = style.node.at_xpath(attribute_xpath))
+              if encoded_value.nil?
+                existing_attribute.remove
+              else
+                existing_attribute.value = encoded_value.to_s
+              end
+
+              next encoded_value
+            end
+
+            next encoded_value if encoded_value.nil?
+
+            node_xpath, attribute = attribute_xpath.split("/@")
+
+            created_node =
+              node_xpath
+                .split("/")
+                .reduce(style.node) do |parent_node, child_xpath|
+                  # find the child node
+                  parent_node.at_xpath(child_xpath) ||
+                    # or create the child node
+                    Nokogiri::XML::Node.new(child_xpath, parent_node)
+                      .tap { |created_child_node| parent_node << created_child_node }
+                end
+
+            created_node.set_attribute(attribute, encoded_value)
+          end
+            .first
+        end
+      end
+
       @attributes = []
 
       class << self
         attr_accessor :attributes
 
         def required_attributes
-          attributes.select { |a| a[:required] }
+          attributes.select(&:required?)
         end
 
-        def attribute(name, *selectors, required: false, converter: Converters::DefaultValueConverter, validator: Validators::DefaultValidator)
-          attributes << {name: name, selectors: selectors, required: required, converter: converter, validator: validator}
+        def attribute(name, *selectors, required: false, converter: nil, validator: nil)
+          new_attribute = Attribute.new(name, selectors, required: required, converter: converter, validator: validator)
+          attributes << new_attribute
 
           define_method(name) do
-            selectors
-              .lazy
-              .filter_map { |node_xpath| node.at_xpath(node_xpath)&.value }
-              .map { |value| converter.decode(value) }
-              .first
+            new_attribute.retrieve_from(self)
           end
 
           define_method("#{name}=") do |value|
-            (required && value.nil?) &&
-              raise(Errors::StyleRequiredPropertyValue, "Required value #{name}")
-
-            validator.validate(value) ||
-              raise(Errors::StyleInvalidPropertyValue, "Invalid value for #{name}: '#{value.nil? ? "nil" : value}'")
-
-            encoded_value = converter.encode(value)
-
-            selectors.map do |attribute_xpath|
-              if (existing_attribute = node.at_xpath(attribute_xpath))
-                if encoded_value.nil?
-                  existing_attribute.remove
-                else
-                  existing_attribute.value = encoded_value.to_s
-                end
-
-                next encoded_value
-              end
-
-              next encoded_value if encoded_value.nil?
-
-              node_xpath, attribute = attribute_xpath.split("/@")
-
-              created_node =
-                node_xpath
-                  .split("/")
-                  .reduce(node) do |parent_node, child_xpath|
-                    # find the child node
-                    parent_node.at_xpath(child_xpath) ||
-                      # or create the child node
-                      Nokogiri::XML::Node.new(child_xpath, parent_node)
-                        .tap { |created_child_node| parent_node << created_child_node }
-                  end
-
-              created_node.set_attribute(attribute, encoded_value)
-            end
-              .first
+            new_attribute.assign_to(self, value)
           end
         end
 
@@ -135,11 +160,9 @@ module Docx
 
       def valid?
         self.class.required_attributes.all? do |a|
-          validator = a[:validator]
-          attribute_name = a[:name]
-          attribute_value = self.send(attribute_name)
+          attribute_value = a.retrieve_from(self)
 
-          validator&.validate(attribute_value)
+          a.validator&.validate(attribute_value)
         end
       end
 
