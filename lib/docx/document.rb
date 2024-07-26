@@ -75,6 +75,20 @@ module Docx
       bkmrks_hsh
     end
 
+    def headers
+      @zip.glob('word/header*.xml').map do |entry|
+        header_xml = entry.get_input_stream.read
+        Nokogiri::XML(header_xml)
+      end
+    end
+
+    def footers
+      @zip.glob('word/footer*.xml').map do |entry|
+        footer_xml = entry.get_input_stream.read
+        Nokogiri::XML(footer_xml)
+      end
+    end
+
     def to_xml
       Nokogiri::XML(@document_xml)
     end
