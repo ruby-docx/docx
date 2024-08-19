@@ -28,6 +28,7 @@ module Docx
           validate_placeholder_content
         end
 
+        # This method detects and replaces the corrupted nodes if any exists.
         def validate_placeholder_content
           placeholder_position_hash = detect_placeholder_positions
           content_size = [0]
