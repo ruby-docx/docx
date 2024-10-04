@@ -8,7 +8,7 @@ module Docx
         include Container
         include Elements::Element
 
-        PLACEHOLDER_REGEX = /\{\{(.*?)\}\}/ # In order to combine text runs with {{}} pattern
+        PLACEHOLDER_REGEX = /\{\{([^{}]*?)\}\}/
 
         def self.tag
           'p'
@@ -28,70 +28,60 @@ module Docx
           validate_placeholder_content
         end
 
-        # This method detects and replaces the corrupted nodes if any exists.
         def validate_placeholder_content
-          placeholder_position_hash = detect_placeholder_positions
-          content_size = [0]
-          text_runs.each_with_index do |text_node, index|
-            content_size[index + 1] = text_node.text.length + (index.zero? ? 0 : content_size[index])
+          # First, build a map of all text run contents and their positions
+          content_map = build_content_map
+          full_text = text_runs.map(&:text).join('')
+
+          # Use global regex to find all placeholders with their positions
+          placeholders = full_text.to_enum(:scan, PLACEHOLDER_REGEX).map do
+            [Regexp.last_match.begin(0), Regexp.last_match.end(0)]
           end
-          content_size.pop
-          placeholder_position_hash.each do |placeholder, placeholder_positions|
-            placeholder_positions.each do |p_start_index|
-              p_end_index = (p_start_index + placeholder.length - 1)
-              tn_start_index = content_size.index(content_size.select { |size| size <= p_start_index }.max)
-              tn_end_index = content_size.index(content_size.select { |size| size <= p_end_index }.max)
-              next if tn_start_index == tn_end_index
-              replace_incorrect_placeholder_content(placeholder, tn_start_index, tn_end_index, content_size[tn_start_index] - p_start_index, p_end_index - content_size[tn_end_index])
+
+          placeholders.each do |start_pos, end_pos|
+            # Find the indexes of the text runs that includes the start and end of the placeholder
+            start_text_run_index = content_map.index { |m| m[:start] <= start_pos && m[:end] >= start_pos }
+            end_text_run_index = content_map.index { |m| m[:start] <= end_pos - 1 && m[:end] >= end_pos - 1 }
+
+            next if start_text_run_index.nil? || end_text_run_index.nil?
+            next if start_text_run_index == end_text_run_index # Skip if entire placeholder is already in single run
+
+            placeholder_content = full_text[start_pos...end_pos]
+
+            (start_text_run_index..end_text_run_index).each do |i|
+              if i == start_text_run_index
+                # Merge the entire placeholder into the first run
+                current_text = content_map[i][:text].dup
+                current_text[start_pos - content_map[i][:start]..-1] = placeholder_content
+                content_map[i][:run].text = current_text
+              elsif i == end_text_run_index
+                # Last run should preserve any content after the placeholder
+                current_text = content_map[i][:text].dup
+                remaining_text = current_text[(end_pos) - content_map[i][:start]..-1]
+                content_map[i][:run].text = remaining_text
+              else
+                # Clear intermediate runs
+                content_map[i][:run].text = ''
+              end
             end
           end
         end
 
-        # This method detect the placeholder's starting index and return the starting index in array.
-        # Ex: Assumptions : text = 'This is Placeholder Text with {{Placeholder}} {{Text}} {{Placeholder}}'
-        #     It will detect the placeholder's starting index from the given text.
-        #     Here, starting index of '{{Placeholder}}' => [30, 55], '{{Text}}' => [46]
-        # @return [Hash]
-        # Ex: {'{{Placeholder}}' => [30, 55], '{{Text}}' => [46]}
-        def detect_placeholder_positions
-          text.scan(PLACEHOLDER_REGEX).flatten.uniq.each_with_object({}) do |placeholder, placeholder_hash|
-            next if placeholder.include?("{") || placeholder.include?("}")
-            placeholder_text = "{{#{placeholder}}}"
-            current_index = text.index(placeholder_text)
-            arr_of_index = [current_index]
-            until current_index.nil?
-              current_index = text.index(placeholder_text, current_index + 1)
-              arr_of_index << current_index unless current_index.nil?
-            end
-            placeholder_hash[placeholder_text] = arr_of_index
-          end
-        end
+        def build_content_map
+          content_map = []
+          current_position = 0
 
-        # @param [String] :placeholder
-        # @param [Integer] :start_index, end_index, p_start_index, p_end_index
-        # This Method replaces below :
-        #   1. Corrupted text nodes content with empty string
-        #   2. Proper Placeholder content within the same text node
-        # Ex: Assume we have a array of text nodes content as text_runs = ['This is ', 'Placeh', 'older Text', 'with ', '{{', 'Place', 'holder}}' , '{{Text}}', '{{Placeholder}}']
-        #   Here if you see, the '{{placeholder}}' is not available in the same text node. We need to merge the content of indexes - text_runs[5], text_runs[6], text_runs[7].
-        #   So We will replace the content as below:
-        #     1. text_runs[5] = '{{Placeholder}}'
-        #     2. text_runs[6] = ''
-        #     3. text_runs[7] = ''
-        def replace_incorrect_placeholder_content(placeholder, start_index, end_index, p_start_index, p_end_index)
-          (start_index..end_index).each do |index|
-            if index == start_index
-              current_text = text_runs[index].text.to_s
-              current_text[p_start_index..-1] = placeholder
-              text_runs[index].text = current_text
-            elsif index == end_index
-              current_text = text_runs[index].text.to_s
-              current_text[0..p_end_index] = ""
-              text_runs[index].text = current_text
-            else
-              text_runs[index].text = ""
-            end
+          text_runs.each do |text_run|
+            run_text = text_run.text.to_s
+            content_map << {
+              start: current_position,
+              end: current_position + run_text.length - 1,
+              text: run_text,
+              run: text_run
+            }
+            current_position += run_text.length
           end
+          content_map
         end
 
         # Set text of paragraph
