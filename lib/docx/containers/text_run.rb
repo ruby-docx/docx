@@ -57,6 +57,19 @@ module Docx
           reset_text
         end
 
+        # Weird things with how $1/$2 in regex blocks are handled means we can't just delegate
+        # block to gsub to get block, we have to do it this way, with a block that gets a MatchData,
+        # from which captures and other match data can be retrieved.
+        # https://ruby-doc.org/3.3.7/MatchData.html
+        def substitute_block(match, &block)
+          @text_nodes.each do |text_node|
+            text_node.content = text_node.content.gsub(match) { |_unused_matched_string|
+              block.call(Regexp.last_match)
+            }
+          end
+          reset_text
+        end
+
         def parse_formatting
           {
             italic:    !@node.xpath('.//w:i').empty?,
