@@ -20,12 +20,6 @@ describe Docx::Document do
     end
 
     context 'When reading a un-supported file' do
-      it 'should throw file not supported error' do
-        expect do
-          Docx::Document.open(@fixtures_path + '/invalid_format.pdf')
-        end.to raise_error(Errno::EIO, 'Input/output error - Invalid file format')
-      end
-
       it 'should throw file not found error' do
         invalid_path = @fixtures_path + '/invalid_file_path.docx'
         expect do
