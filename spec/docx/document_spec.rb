@@ -200,6 +200,19 @@ describe Docx::Document do
 
       expect(@doc.paragraphs[1].text).to eq('Multi-line paragraph line 1same paragraph line 2yet the same paragraph line3 ')
     end
+
+    it "should replace placeholder in any line of paragraph using substitute_block" do
+      expect(@doc.paragraphs[0].text).to eq('Page title')
+      expect(@doc.paragraphs[1].text).to eq('Multi-line paragraph line 1_placeholder2_ line 2_placeholder3_ line3 ')
+
+      @doc.paragraphs[1].each_text_run do |text_run|
+        text_run.substitute_block(/_placeholder(\d)_/) { |match_data|
+          "_replacement_#{match_data[1]}"
+        }
+      end
+
+      expect(@doc.paragraphs[1].text).to eq('Multi-line paragraph line 1_replacement_2 line 2_replacement_3 line3 ')
+    end
   end
 
   describe 'read formatting' do
