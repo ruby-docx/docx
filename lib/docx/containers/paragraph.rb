@@ -31,40 +31,49 @@ module Docx
         def validate_placeholder_content
           # First, build a map of all text run contents and their positions
           content_map = build_content_map
-          full_text = text_runs.map(&:text).join('')
+          full_text = content_map.map { |m| m[:text] }.join('')
 
           # Use global regex to find all placeholders with their positions
           placeholders = full_text.to_enum(:scan, PLACEHOLDER_REGEX).map do
             [Regexp.last_match.begin(0), Regexp.last_match.end(0)]
           end
+          return if placeholders.empty?
 
-          placeholders.each do |start_pos, end_pos|
-            # Find the indexes of the text runs that includes the start and end of the placeholder
-            start_text_run_index = content_map.index { |m| m[:start] <= start_pos && m[:end] >= start_pos }
-            end_text_run_index = content_map.index { |m| m[:start] <= end_pos - 1 && m[:end] >= end_pos - 1 }
-
-            next if start_text_run_index.nil? || end_text_run_index.nil?
-            next if start_text_run_index == end_text_run_index # Skip if entire placeholder is already in single run
-
-            placeholder_content = full_text[start_pos...end_pos]
-
-            (start_text_run_index..end_text_run_index).each do |i|
-              if i == start_text_run_index
-                # Merge the entire placeholder into the first run
-                current_text = content_map[i][:text].dup
-                current_text[start_pos - content_map[i][:start]..-1] = placeholder_content
-                content_map[i][:run].text = current_text
-              elsif i == end_text_run_index
-                # Last run should preserve any content after the placeholder
-                current_text = content_map[i][:text].dup
-                remaining_text = current_text[(end_pos) - content_map[i][:start]..-1]
-                content_map[i][:run].text = remaining_text
-              else
-                # Clear intermediate runs
-                content_map[i][:run].text = ''
-              end
+          # Reassign text to runs so each placeholder lands wholly in the run
+          # that holds its opening "{{", while every other character stays in its
+          # original run. We build the result in a single position-ordered pass
+          # rather than editing runs in place from the static map: when one
+          # token's closing "}}" shares a run with the next token's "{{" (Word
+          # emits such runs around proofing marks, e.g. "}} at CTC {{"), in-place
+          # editing rewrote that shared run from stale text and resurrected the
+          # "}}" a previous placeholder had already trimmed. A single pass keeps
+          # every placeholder atomic and never reintroduces a trimmed brace.
+          new_texts = Array.new(content_map.length) { +'' }
+          pos = 0
+          next_placeholder = 0
+          while pos < full_text.length
+            if next_placeholder < placeholders.length && placeholders[next_placeholder][0] == pos
+              start_pos, end_pos = placeholders[next_placeholder]
+              owner = run_index_at(content_map, start_pos)
+              new_texts[owner] << full_text[start_pos...end_pos] if owner
+              pos = end_pos
+              next_placeholder += 1
+            else
+              owner = run_index_at(content_map, pos)
+              new_texts[owner] << full_text[pos] if owner
+              pos += 1
             end
           end
+
+          content_map.each_with_index do |entry, i|
+            entry[:run].text = new_texts[i] unless new_texts[i] == entry[:text]
+          end
+        end
+
+        # Index of the run whose original span covers the given character
+        # position. Empty runs occupy no positions and are never returned.
+        def run_index_at(content_map, position)
+          content_map.index { |m| m[:start] <= position && m[:end] >= position }
         end
 
         def build_content_map

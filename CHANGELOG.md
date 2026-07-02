@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.4
+
+### Bug fixes
+
+- Fix placeholder consolidation reintroducing a stray `}}` when two `{{...}}` placeholders share a boundary run (e.g. Word emits `}} in Grade {{` around proofing marks). Consolidation is now a single position-ordered pass that keeps each placeholder atomic and never alters the paragraph's visible text.
+
 ## v0.7.0
 
 ### Enhancements
