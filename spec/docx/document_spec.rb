@@ -387,6 +387,65 @@ describe Docx::Document do
 
       it_behaves_like 'reading'
     end
+
+    # Regression: #update wrote headers/footers back by positional index
+    # ("word/header#{i+1}.xml"), but glob returns entries in the zip's
+    # central-directory order, which is not always sorted. When header2.xml
+    # was stored before header1.xml, header2's content got written into
+    # header1.xml and header2.xml (the default header ref) was overwritten
+    # with a different part — blanking the header in the rendered output.
+    context 'when header/footer parts are stored out of numeric order' do
+      def build_docx(entries)
+        require 'zip'
+        buffer = Zip::OutputStream.write_buffer do |out|
+          entries.each do |name, content|
+            out.put_next_entry(name)
+            out.write(content)
+          end
+        end
+        buffer.rewind
+        buffer
+      end
+
+      let(:header2_body) { '<w:p><w:r><w:t>HEADER TWO CONTENT</w:t></w:r></w:p>' }
+      let(:header_xml) do
+        lambda do |body|
+          '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' \
+            '<w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' \
+            "#{body}</w:hdr>"
+        end
+      end
+
+      let(:stream) do
+        # header2.xml is intentionally written to the zip BEFORE header1.xml.
+        entries = [
+          ['word/header2.xml', header_xml.call(header2_body)],
+          ['word/header1.xml', header_xml.call('<w:p/>')],
+          ['word/document.xml',
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' \
+            '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' \
+            '<w:body><w:p><w:r><w:t>Body</w:t></w:r></w:p></w:body></w:document>'],
+          ['word/styles.xml',
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' \
+            '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' \
+            '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>' \
+            '</w:styles>'],
+          ['word/_rels/document.xml.rels',
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' \
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>']
+        ]
+        Docx::Document.open(build_docx(entries)).stream
+      end
+
+      it 'keeps each header part under its own filename after streaming' do
+        require 'zip'
+        header2 = nil
+        Zip::File.open_buffer(stream) do |zip|
+          header2 = zip.read('word/header2.xml')
+        end
+        expect(header2).to include('HEADER TWO CONTENT')
+      end
+    end
   end
 
   describe 'outputting html' do
