@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'docx'
+require 'timeout'
 
 describe Docx::Elements::Containers::Paragraph do
   def paragraph(xml, document_properties = {}, document = nil)
@@ -140,6 +141,19 @@ describe Docx::Elements::Containers::Paragraph do
       p.substitute('{{a}}', '{{a}}{{a}}')
 
       expect(p.text).to eq('{{a}}{{a}}')
+    end
+
+    # Without the guard against empty matches this would loop forever, so it
+    # runs under a timeout to fail instead of hanging.
+    it 'ignores a pattern that only matches the empty string' do
+      p = paragraph('<w:p><w:r><w:t>abc</w:t></w:r></w:p>')
+
+      Timeout.timeout(5) do
+        p.substitute(/x*/, '-')
+        p.substitute(/x*/, '')
+      end
+
+      expect(p.text).to eq('abc')
     end
 
     it 'leaves the paragraph untouched when nothing matches' do
