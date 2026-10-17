@@ -48,6 +48,27 @@ describe Docx::Elements::Containers::TextRun do
 
       expect(node.xpath('w:t').map(&:text)).to eq(['new'])
     end
+
+    # Regression tests for #190
+    it 'reflects the new text when the run had no w:t' do
+      text_run = described_class.new(w_node('<w:r/>'))
+
+      text_run.text = 'new'
+
+      expect(text_run.text).to eq('new')
+      expect(text_run.to_html).to eq('new')
+    end
+
+    it 'keeps updating the same w:t on later assignments' do
+      node = w_node('<w:r/>')
+      text_run = described_class.new(node)
+
+      text_run.text = 'first'
+      text_run.text = 'second'
+
+      expect(text_run.text).to eq('second')
+      expect(node.xpath('w:t').map(&:text)).to eq(['second'])
+    end
   end
 
   describe '#substitute' do

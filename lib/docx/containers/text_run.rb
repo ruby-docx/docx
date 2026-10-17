@@ -40,6 +40,7 @@ module Docx
           elsif @text_nodes.empty?
             new_t = Elements::Text.create_within(self)
             new_t.content = content
+            @text_nodes << new_t
           end
           reset_text
         end
