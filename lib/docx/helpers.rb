@@ -4,7 +4,7 @@ module Docx
     # than the default inspect method. But you can still get the default inspect method by passing
     # true as the first argument.
     def inspect(full = false)
-      return(super) if full
+      return super() if full
 
       variable_values =
         instance_variables.map do |var|

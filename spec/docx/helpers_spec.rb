@@ -24,5 +24,10 @@ describe Docx::SimpleInspect do
       expect(object.inspect).to include(%(@long="#{'x' * 100}...))
       expect(object.inspect.length).to be < 300
     end
+
+    # Regression test for #191
+    it 'falls back to the default inspect when asked for the full output' do
+      expect(object.inspect(true)).to include('x' * 500)
+    end
   end
 end
