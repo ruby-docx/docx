@@ -22,6 +22,9 @@ thin wrapper over rubyzip + Nokogiri.
 - **Always work test-first.** Every behavior change (feature or bug fix) follows
   the `tdd-development` skill: write a failing test, confirm red, implement,
   confirm green + full suite, then branch → PR → CI → merge → cleanup.
+- **Specs mirror `lib/`, one file per class.** Unit-test elements from XML
+  fragments (`w_node`), keep `document_spec.rb` to what Document owns, and put
+  real-file round trips in `spec/integration/` (details in `tdd-development`).
 - **Keep new constructor arguments optional** (`def initialize(node, props = {},
   doc = nil)`) to preserve backward compatibility for existing callers.
 - **Be honest about scope.** When a report spans multiple causes, separate
