@@ -56,6 +56,15 @@ describe Docx::Elements::Containers::Paragraph do
 
       expect(p.text_runs.map(&:text)).to eq(['new'])
     end
+
+    # Regression test for #197
+    it 'replaces the text of a single run holding several w:t' do
+      p = paragraph('<w:p><w:r><w:t>Name: Jane</w:t><w:br/><w:t>Next line</w:t></w:r></w:p>')
+
+      p.text = 'new'
+
+      expect(p.text).to eq('new')
+    end
   end
 
   describe '#text_runs' do

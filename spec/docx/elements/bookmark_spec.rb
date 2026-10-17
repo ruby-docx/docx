@@ -61,6 +61,48 @@ describe Docx::Elements::Bookmark do
       end
     end
 
+    # Regression tests for #197: the run next to the bookmark may hold several
+    # w:t around line breaks or tabs (as LibreOffice writes). Inserting must
+    # write next to the bookmark and leave the rest of that run alone.
+    context 'when the adjacent run holds several w:t' do
+      def layout(body)
+        body.xpath('.//w:t|.//w:br|.//w:tab').map { |n| n.name == 't' ? n.text : "<#{n.name}>" }
+      end
+
+      it 'inserts after the bookmark at the start of the following run' do
+        body = w_body('<w:p><w:bookmarkStart w:id="0" w:name="b"/><w:r><w:t>a</w:t><w:br/><w:t>b</w:t></w:r></w:p>')
+
+        bookmark_in(body).insert_text_after('X')
+
+        expect(layout(body)).to eq(['Xa', '<br>', 'b'])
+      end
+
+      it 'inserts before the bookmark at the end of the preceding run' do
+        body = w_body('<w:p><w:r><w:t>a</w:t><w:tab/><w:t>b</w:t></w:r><w:bookmarkStart w:id="0" w:name="b"/></w:p>')
+
+        bookmark_in(body).insert_text_before('X')
+
+        expect(layout(body)).to eq(['a', '<tab>', 'bX'])
+      end
+
+      it 'inserts after a break that ends the preceding run' do
+        body = w_body('<w:p><w:r><w:t>a</w:t><w:br/></w:r><w:bookmarkStart w:id="0" w:name="b"/></w:p>')
+
+        bookmark_in(body).insert_text_before('X')
+
+        expect(layout(body)).to eq(['a', '<br>', 'X'])
+      end
+
+      it 'inserts before a break that starts the following run' do
+        body = w_body('<w:p><w:bookmarkStart w:id="0" w:name="b"/><w:r><w:rPr><w:b/></w:rPr><w:br/><w:t>a</w:t></w:r></w:p>')
+
+        bookmark_in(body).insert_text_after('X')
+
+        expect(layout(body)).to eq(['X', '<br>', 'a'])
+        expect(body.at_xpath('.//w:r').element_children.first.name).to eq('rPr')
+      end
+    end
+
     describe '#insert_multiple_lines' do
       it 'replaces the paragraph text and adds a paragraph per extra line' do
         body = w_body(<<~XML)
