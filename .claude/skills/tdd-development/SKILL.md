@@ -24,13 +24,14 @@ before writing the implementation.
    git switch master && git fetch origin master && git merge --ff-only origin/master
    git switch -c <topic-branch>
    ```
-2. **Write a failing test first.** Add a spec (usually in
-   `spec/docx/document_spec.rb`) that reproduces the desired behavior or the bug.
-   Name a regression test after the issue, e.g. a comment `# Regression test for #NNN`.
+2. **Write a failing test first.** Add a spec that reproduces the desired
+   behavior or the bug, in the spec file of the class that owns the behavior
+   (see "Where tests go" below). Name a regression test after the issue, e.g. a
+   comment `# Regression test for #NNN`.
 3. **Confirm RED.** Run just that example and verify it fails for the expected
    reason:
    ```sh
-   bundle exec rspec spec/docx/document_spec.rb -e "<example text>" 2>&1 | grep -vE 'warning:|previous definition'
+   bundle exec rspec spec/docx/containers/paragraph_spec.rb -e "<example text>" 2>&1 | grep -vE 'warning:|previous definition'
    ```
 4. **Implement the minimal change** to make it pass. Keep it focused.
 5. **Confirm GREEN** for the new test and **run the full suite** to catch
@@ -51,6 +52,25 @@ before writing the implementation.
    git switch master && git fetch origin master && git merge --ff-only origin/master
    git branch -D <topic-branch> && git push origin --delete <topic-branch>
    ```
+
+## Where tests go
+
+Specs mirror `lib/` — one spec file per class:
+
+- **Unit specs** (`spec/docx/containers/*_spec.rb`, `spec/docx/elements/*_spec.rb`):
+  build the node from an XML fragment with `w_node('<w:p>…</w:p>')` /
+  `w_body(…)` (`spec/support/xml_helpers.rb`), pass `document_properties` as a
+  plain hash, and stand in for the Document with `instance_double(Docx::Document, …)`.
+  Prefer this for element behavior — no .docx fixture needed.
+- **`spec/docx/document_spec.rb`**: only what Docx::Document itself owns —
+  opening the package, loading parts (styles, rels, headers, footers),
+  document-wide lookups, and save/stream/replace_entry.
+- **`spec/integration/*_spec.rb`**: end-to-end scenarios on real .docx fixtures —
+  save-and-reopen round trips, or bugs that only reproduce with a real file's
+  structure (Office365, WPS, Google Docs, …).
+
+Use `fixture_path('x.docx')` for fixtures and `tmp_path('out.docx')` for saved
+files (a per-example temp dir; never write into `spec/fixtures`).
 
 ## Conventions specific to this repo
 
