@@ -42,7 +42,8 @@ module Docx
 
       # Insert node as first child (after properties)
       def prepend_to(element)
-        @node = element.node.properties.add_next_sibling(@node)
+        properties = element.properties if element.respond_to?(:properties)
+        @node = properties ? properties.add_next_sibling(@node) : element.node.prepend_child(@node)
         self
       end
 

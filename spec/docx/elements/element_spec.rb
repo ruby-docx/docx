@@ -98,6 +98,36 @@ describe Docx::Elements::Element do
     end
   end
 
+  # Regression tests for #189
+  describe '#prepend_to' do
+    let(:run) { element_class.new(w_node('<w:r><w:t>new </w:t></w:r>')) }
+
+    it 'inserts the node right after the properties of a container' do
+      paragraph = Docx::Elements::Containers::Paragraph.new(
+        w_node('<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:t>text</w:t></w:r></w:p>')
+      )
+
+      expect(run.prepend_to(paragraph)).to equal(run)
+      expect(paragraph.node.element_children.map(&:name)).to eq(%w[pPr r r])
+      expect(paragraph.text).to eq('new text')
+      expect(run.node.parent).to equal(paragraph.node)
+    end
+
+    it 'inserts the node as the first child of a container without properties' do
+      paragraph = Docx::Elements::Containers::Paragraph.new(w_node('<w:p><w:r><w:t>text</w:t></w:r></w:p>'))
+
+      run.prepend_to(paragraph)
+
+      expect(paragraph.text).to eq('new text')
+    end
+
+    it 'inserts the node as the first child of a non-container element' do
+      run.prepend_to(first)
+
+      expect(texts).to eq(%w[new\ first second])
+    end
+  end
+
   describe '.create_with' do
     it 'builds a detached element from the class tag in the same XML document' do
       created = element_class.create_with(first)
