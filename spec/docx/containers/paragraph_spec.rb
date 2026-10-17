@@ -140,6 +140,84 @@ describe Docx::Elements::Containers::Paragraph do
     it 'returns self' do
       expect(split.substitute('{{first_name}}', 'World')).to equal(split)
     end
+
+    it 'keeps the text after the match in its own run and formatting' do
+      p = paragraph('<w:p><w:r><w:t>{{na</w:t></w:r><w:r><w:rPr><w:i/></w:rPr><w:t>me}} after</w:t></w:r></w:p>')
+
+      p.substitute('{{name}}', 'Jane')
+
+      expect(p.text_runs.map(&:text)).to eq(['Jane', ' after'])
+      expect(p.text_runs[1]).to be_italicized
+    end
+
+    # Regression tests for #187: files saved by LibreOffice or textutil keep
+    # several w:t in one run (around w:br / w:tab), and a hyperlink's runs are
+    # read as one TextRun. The substitution must work on the w:t nodes.
+    context 'with several w:t in a run or a hyperlink (#187)' do
+      # The paragraph content in document order, breaks and tabs included.
+      def layout(p)
+        p.node.xpath('.//w:t|.//w:br|.//w:tab').map { |n| n.name == 't' ? n.text : "<#{n.name}>" }
+      end
+
+      it 'replaces a placeholder sitting before a line break in the same run' do
+        p = paragraph('<w:p><w:r><w:t>Name: {{name}}</w:t><w:br/><w:t>Next line</w:t></w:r></w:p>')
+
+        p.substitute('{{name}}', 'Jane')
+
+        expect(layout(p)).to eq(['Name: Jane', '<br>', 'Next line'])
+      end
+
+      it 'replaces a split placeholder whose last run also holds a line break' do
+        p = paragraph(<<~XML)
+          <w:p><w:r><w:t xml:space="preserve">Name: {{na</w:t></w:r><w:r><w:t>me}}</w:t><w:br/><w:t>Next line</w:t></w:r></w:p>
+        XML
+
+        p.substitute('{{name}}', 'Jane')
+
+        expect(p.text).to eq('Name: JaneNext line')
+        expect(layout(p)).to eq(['Name: Jane', '', '<br>', 'Next line'])
+      end
+
+      it 'drops a tab that lies inside the placeholder' do
+        p = paragraph(<<~XML)
+          <w:p><w:r><w:t xml:space="preserve">A {{n</w:t></w:r><w:r><w:t>a</w:t><w:tab/><w:t>m</w:t></w:r><w:r><w:t xml:space="preserve">e}} B</w:t></w:r></w:p>
+        XML
+
+        p.substitute('{{name}}', 'Jane')
+
+        expect(p.text).to eq('A Jane B')
+        expect(layout(p)).not_to include('<tab>')
+      end
+
+      it 'keeps breaks and tabs outside the placeholder' do
+        p = paragraph('<w:p><w:r><w:t>a</w:t><w:tab/><w:t>{{na</w:t></w:r><w:r><w:t>me}}</w:t><w:br/><w:t>b</w:t></w:r></w:p>')
+
+        p.substitute('{{name}}', 'Jane')
+
+        expect(layout(p)).to eq(['a', '<tab>', 'Jane', '', '<br>', 'b'])
+      end
+
+      it 'replaces a placeholder that starts inside a hyperlink' do
+        p = paragraph(<<~XML)
+          <w:p><w:r><w:t xml:space="preserve">See </w:t></w:r><w:hyperlink w:anchor="x"><w:r><w:t xml:space="preserve">site </w:t></w:r><w:r><w:t>{{na</w:t></w:r></w:hyperlink><w:r><w:t xml:space="preserve">me}} end</w:t></w:r></w:p>
+        XML
+
+        p.substitute('{{name}}', 'Jane')
+
+        expect(p.text).to eq('See site Jane end')
+      end
+
+      it 'keeps the space after the placeholder through a save' do
+        p = paragraph('<w:p><w:r><w:t>{{na</w:t></w:r><w:r><w:t xml:space="preserve">me}} </w:t></w:r><w:r><w:t>end</w:t></w:r></w:p>')
+
+        p.substitute('{{name}}', 'Jane')
+
+        expect(p.text).to eq('Jane end')
+        p.node.xpath('.//w:t').select { |t| t.text.match?(/\A\s|\s\z/) }.each do |t|
+          expect(t.to_xml).to include('xml:space="preserve"')
+        end
+      end
+    end
   end
 
   describe 'alignment' do

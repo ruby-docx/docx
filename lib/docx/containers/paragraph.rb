@@ -70,9 +70,13 @@ module Docx
         # such as "{{fi", "rst_na", "me}}"). The per-run TextRun#substitute cannot
         # match those, but this can, because it joins the runs first.
         #
-        # The matched region is collapsed into the first run it touches, so that
-        # run's formatting is kept while the other spanned runs are emptied; runs
-        # outside the match are left untouched.
+        # The substitution works on the paragraph's w:t nodes, so it also handles
+        # runs holding several w:t (LibreOffice writes "text<w:br/>text" in one
+        # run) and placeholders that start inside a hyperlink. The replacement
+        # goes into the w:t holding the first matched character, so that run's
+        # formatting is used; the rest of the match is cut from the following
+        # w:t, and line breaks and tabs inside the match are dropped. Text,
+        # breaks and tabs outside the match stay where they are.
         #
         # +pattern+ may be a String or a Regexp; +replacement+ follows String#sub
         # semantics, so capture-group backreferences (e.g. '\1') work with a Regexp.
@@ -81,20 +85,19 @@ module Docx
         #   paragraph.substitute('{{first_name}}', 'Jane')   # => "Hello Jane!"
         #   paragraph.substitute(/\{\{(\w+)\}\}/, 'value of \1')
         #
-        # See https://github.com/ruby-docx/docx/issues/147
+        # See https://github.com/ruby-docx/docx/issues/147 and #187
         def substitute(pattern, replacement)
           search_from = 0
           loop do
-            runs = text_runs
-            break if runs.empty?
+            texts = @node.xpath(TEXT_XPATH).map { |t_node| Elements::Text.new(t_node) }
 
             offsets = []
             cursor = 0
-            runs.each do |run|
+            texts.each do |text|
               offsets << cursor
-              cursor += run.text.length
+              cursor += text.content.length
             end
-            full_text = runs.map(&:text).join
+            full_text = texts.map(&:content).join
 
             match = full_text.match(pattern, search_from)
             break unless match
@@ -102,15 +105,21 @@ module Docx
 
             match_start = match.begin(0)
             match_end   = match.end(0) # exclusive
-            first = offsets.rindex { |offset| offset <= match_start }
-            last  = offsets.rindex { |offset| offset < match_end }
+            # the w:t holding the first and the last matched character
+            first = texts.each_index.find { |i| offsets[i] + texts[i].content.length > match_start }
+            last  = texts.each_index.find { |i| offsets[i] + texts[i].content.length >= match_end }
 
-            combined = runs[first..last].map(&:text).join
-            local_start = match_start - offsets[first]
-            local_end   = match_end - offsets[first]
-            replaced = combined[local_start...local_end].sub(pattern, replacement)
-            runs[first].text = combined[0...local_start] + replaced + combined[local_end..-1]
-            ((first + 1)..last).each { |index| runs[index].text = '' }
+            replaced = match[0].sub(pattern, replacement)
+            head = texts[first].content[0...(match_start - offsets[first])]
+            tail = texts[last].content[(match_end - offsets[last])..]
+            if first == last
+              texts[first].content = head + replaced + tail
+            else
+              texts[first].content = head + replaced
+              texts[(first + 1)...last].each { |text| text.content = '' }
+              texts[last].content = tail
+              remove_separators_between(texts[first].node, texts[last].node)
+            end
 
             # advance past the inserted replacement so it is not re-matched
             search_from = match_start + replaced.length
@@ -164,6 +173,22 @@ module Docx
         alias_method :text, :to_s
 
         private
+
+        # The w:t read by #text (those of the runs and hyperlink runs), in
+        # document order.
+        TEXT_XPATH = 'w:r/w:t|w:hyperlink/w:r/w:t'
+        # Line breaks and tabs that sit between those w:t.
+        SEPARATOR_XPATH = %w[br tab cr].map { |tag| "w:r/w:#{tag}|w:hyperlink/w:r/w:#{tag}" }.join('|')
+        private_constant :TEXT_XPATH, :SEPARATOR_XPATH
+
+        # Remove the line breaks and tabs lying between two w:t of a match.
+        def remove_separators_between(first_t, last_t)
+          separators = @node.xpath(SEPARATOR_XPATH).to_a
+          nodes = @node.xpath("#{TEXT_XPATH}|#{SEPARATOR_XPATH}").to_a
+          from = nodes.index(first_t)
+          to = nodes.index(last_t)
+          nodes[(from + 1)...to].each { |node| node.remove if separators.include?(node) }
+        end
 
         def style_property
           properties&.at_xpath('w:pStyle') || properties&.add_child('<w:pStyle/>').first
