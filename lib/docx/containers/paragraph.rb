@@ -88,41 +88,12 @@ module Docx
         # See https://github.com/ruby-docx/docx/issues/147 and #187
         def substitute(pattern, replacement)
           search_from = 0
-          loop do
-            texts = @node.xpath(TEXT_XPATH).map { |t_node| Elements::Text.new(t_node) }
-
-            offsets = []
-            cursor = 0
-            texts.each do |text|
-              offsets << cursor
-              cursor += text.content.length
-            end
-            full_text = texts.map(&:content).join
-
-            match = full_text.match(pattern, search_from)
-            break unless match
-            break if match.end(0) == match.begin(0) # ignore empty matches
-
-            match_start = match.begin(0)
-            match_end   = match.end(0) # exclusive
-            # the w:t holding the first and the last matched character
-            first = texts.each_index.find { |i| offsets[i] + texts[i].content.length > match_start }
-            last  = texts.each_index.find { |i| offsets[i] + texts[i].content.length >= match_end }
-
+          while (match = find_match(pattern, search_from))
             replaced = match[0].sub(pattern, replacement)
-            head = texts[first].content[0...(match_start - offsets[first])]
-            tail = texts[last].content[(match_end - offsets[last])..]
-            if first == last
-              texts[first].content = head + replaced + tail
-            else
-              texts[first].content = head + replaced
-              texts[(first + 1)...last].each { |text| text.content = '' }
-              texts[last].content = tail
-              remove_separators_between(texts[first].node, texts[last].node, TEXT_XPATH, SEPARATOR_XPATH)
-            end
+            replace_text_range(match.begin(0)...match.end(0), replaced)
 
             # advance past the inserted replacement so it is not re-matched
-            search_from = match_start + replaced.length
+            search_from = match.begin(0) + replaced.length
           end
           self
         end
@@ -180,6 +151,43 @@ module Docx
         # Line breaks and tabs that sit between those w:t.
         SEPARATOR_XPATH = %w[br tab cr].map { |tag| "w:r/w:#{tag}|w:hyperlink/w:r/w:#{tag}" }.join('|')
         private_constant :TEXT_XPATH, :SEPARATOR_XPATH
+
+        # The paragraph's w:t, in document order; their contents joined make up #text.
+        def text_nodes
+          @node.xpath(TEXT_XPATH).map { |t_node| Elements::Text.new(t_node) }
+        end
+
+        # The first match of +pattern+ in the paragraph text at or after +from+,
+        # or nil when there is none. An empty match also gives nil, so that
+        # #substitute stops rather than loop on it.
+        def find_match(pattern, from)
+          match = text_nodes.map(&:content).join.match(pattern, from)
+          match unless match.nil? || match[0].empty?
+        end
+
+        # Replace the characters in +range+ of the paragraph text with +string+.
+        # The string goes into the w:t holding the range's first character; the
+        # rest of the range is cut from the following w:t, and line breaks and
+        # tabs inside it are removed.
+        def replace_text_range(range, string)
+          texts = text_nodes
+          # boundaries[i]...boundaries[i + 1] is where texts[i] sits in the text
+          boundaries = texts.each_with_object([0]) { |text, acc| acc << acc.last + text.content.length }
+          first = texts.each_index.find { |i| boundaries[i + 1] > range.begin }
+          last  = texts.each_index.find { |i| boundaries[i + 1] >= range.end }
+
+          head = texts[first].content[0...(range.begin - boundaries[first])]
+          tail = texts[last].content[(range.end - boundaries[last])..]
+          if first == last
+            texts[first].content = head + string + tail
+            return
+          end
+
+          texts[first].content = head + string
+          texts[(first + 1)...last].each { |text| text.content = '' }
+          texts[last].content = tail
+          remove_separators_between(texts[first].node, texts[last].node, TEXT_XPATH, SEPARATOR_XPATH)
+        end
 
         def style_property
           properties&.at_xpath('w:pStyle') || properties&.add_child('<w:pStyle/>').first
