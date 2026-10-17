@@ -113,6 +113,9 @@ module Docx
     end
 
     def hyperlink_relationships
+      # @rels is nil when the document has no relationships part (#192)
+      return Nokogiri::XML::NodeSet.new(Nokogiri::XML::Document.new) unless @rels
+
       @rels.xpath("//xmlns:Relationship[contains(@Type,'hyperlink')]")
     end
 

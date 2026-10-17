@@ -157,6 +157,22 @@ describe Docx::Document do
       expect { doc.hyperlinks }.not_to raise_error
       expect(doc.hyperlinks).to be_a(Hash)
     end
+
+    # Regression tests for #192
+    context 'when the document has no relationships part' do
+      let(:doc) do
+        described_class.open(fixture_without('basic.docx', 'word/_rels/document.xml.rels'))
+      end
+
+      it 'is empty' do
+        expect(doc.hyperlinks).to eq({})
+      end
+
+      it 'still reads the document' do
+        expect(doc.paragraphs.map(&:text)).to eq(%w[hello world])
+        expect(doc.to_html).to include('hello')
+      end
+    end
   end
 
   describe '#document_properties' do
