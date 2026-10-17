@@ -13,6 +13,8 @@ module Docx
 
       def content=(args)
         @node.content = args
+        # Without xml:space="preserve", Word drops leading and trailing spaces.
+        @node['xml:space'] = 'preserve' if args.to_s.match?(/\A\s|\s\z/)
       end
 
       def initialize(node)
