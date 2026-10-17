@@ -17,14 +17,12 @@ module Docx
 
       # Insert text before bookmarkStart node
       def insert_text_before(text)
-        text_run = get_run_before
-        text_run.text = "#{text_run.text}#{text}"
+        append_to_run(get_run_before, text)
       end
 
       # Insert text after bookmarkStart node
       def insert_text_after(text)
-        text_run = get_run_after
-        text_run.text = "#{text}#{text_run.text}"
+        prepend_to_run(get_run_after, text)
       end
 
       # insert multiple lines starting with paragraph containing bookmark node.
@@ -102,6 +100,38 @@ module Docx
       end
 
       private
+
+      # A run's text, line breaks and tabs, in document order.
+      RUN_CONTENT_XPATH = 'w:t|w:br|w:tab|w:cr'
+      private_constant :RUN_CONTENT_XPATH
+
+      # Add text at the very end of the run, which sits just before the
+      # bookmark: to its last w:t, or to a new w:t when the run ends with a
+      # break or tab. The rest of the run is left as it is (#197).
+      def append_to_run(run, text)
+        last = run.node.xpath(RUN_CONTENT_XPATH).last
+        if last && run.node.xpath('w:t').include?(last)
+          Text.new(last).content = last.content + text
+        else
+          Text.create_within(run).content = text
+        end
+      end
+
+      # Add text at the very start of the run, which sits just after the
+      # bookmark: to its first w:t, or to a new w:t when the run starts with
+      # a break or tab. The rest of the run is left as it is (#197).
+      def prepend_to_run(run, text)
+        first = run.node.xpath(RUN_CONTENT_XPATH).first
+        if first && run.node.xpath('w:t').include?(first)
+          Text.new(first).content = text + first.content
+        elsif first
+          new_t = Text.create_with(run)
+          new_t.node = first.add_previous_sibling(new_t.node)
+          new_t.content = text
+        else
+          Text.create_within(run).content = text
+        end
+      end
 
       # The w:p the bookmark sits inside, or nil when it is block-level.
       def enclosing_paragraph

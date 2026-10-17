@@ -14,6 +14,12 @@ module Docx
           strike: false
         }
 
+        # The w:t of the run, or of the runs of a hyperlink, in document order.
+        TEXT_XPATH = 'w:t|w:r/w:t'
+        # Line breaks and tabs that sit between those w:t.
+        SEPARATOR_XPATH = %w[br tab cr].map { |tag| "w:#{tag}|w:r/w:#{tag}" }.join('|')
+        private_constant :TEXT_XPATH, :SEPARATOR_XPATH
+
         def self.tag
           'r'
         end
@@ -23,8 +29,7 @@ module Docx
 
         def initialize(node, document_properties = {})
           @node = node
-          @text_nodes = @node.xpath('w:t').map {|t_node| Elements::Text.new(t_node) }
-          @text_nodes = @node.xpath('w:t|w:r/w:t').map {|t_node| Elements::Text.new(t_node) }
+          @text_nodes = @node.xpath(TEXT_XPATH).map {|t_node| Elements::Text.new(t_node) }
 
           @properties_tag = 'rPr'
           @text       = parse_text || ''
@@ -33,14 +38,28 @@ module Docx
           @font_size = @document_properties[:font_size]
         end
 
-        # Set text of text run
+        # Set text of text run.
+        #
+        # The text from the first through the last w:t is replaced: the content
+        # goes into the first w:t, and the other w:t and the line breaks and
+        # tabs between them are removed (#text never includes breaks or tabs,
+        # so a plain string cannot say where they belong). Anything before the
+        # first or after the last w:t, such as a trailing page break, is kept.
+        # To replace part of a paragraph while keeping its line breaks in place,
+        # use Paragraph#substitute.
         def text=(content)
-          if @text_nodes.size == 1
-            @text_nodes.first.content = content
-          elsif @text_nodes.empty?
+          if @text_nodes.empty?
             new_t = Elements::Text.create_within(self)
             new_t.content = content
             @text_nodes << new_t
+          else
+            first, *rest = @text_nodes
+            first.content = content
+            unless rest.empty?
+              remove_separators_between(first.node, rest.last.node, TEXT_XPATH, SEPARATOR_XPATH)
+              rest.each { |text_node| text_node.node.remove }
+              @text_nodes = [first]
+            end
           end
           reset_text
         end

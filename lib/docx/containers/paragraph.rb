@@ -118,7 +118,7 @@ module Docx
               texts[first].content = head + replaced
               texts[(first + 1)...last].each { |text| text.content = '' }
               texts[last].content = tail
-              remove_separators_between(texts[first].node, texts[last].node)
+              remove_separators_between(texts[first].node, texts[last].node, TEXT_XPATH, SEPARATOR_XPATH)
             end
 
             # advance past the inserted replacement so it is not re-matched
@@ -180,15 +180,6 @@ module Docx
         # Line breaks and tabs that sit between those w:t.
         SEPARATOR_XPATH = %w[br tab cr].map { |tag| "w:r/w:#{tag}|w:hyperlink/w:r/w:#{tag}" }.join('|')
         private_constant :TEXT_XPATH, :SEPARATOR_XPATH
-
-        # Remove the line breaks and tabs lying between two w:t of a match.
-        def remove_separators_between(first_t, last_t)
-          separators = @node.xpath(SEPARATOR_XPATH).to_a
-          nodes = @node.xpath("#{TEXT_XPATH}|#{SEPARATOR_XPATH}").to_a
-          from = nodes.index(first_t)
-          to = nodes.index(last_t)
-          nodes[(from + 1)...to].each { |node| node.remove if separators.include?(node) }
-        end
 
         def style_property
           properties&.at_xpath('w:pStyle') || properties&.add_child('<w:pStyle/>').first

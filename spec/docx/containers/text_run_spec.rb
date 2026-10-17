@@ -69,6 +69,45 @@ describe Docx::Elements::Containers::TextRun do
       expect(text_run.text).to eq('second')
       expect(node.xpath('w:t').map(&:text)).to eq(['second'])
     end
+
+    # Regression tests for #197
+    context 'when the run has several w:t' do
+      # The run content in document order, breaks and tabs included.
+      def layout(node)
+        node.xpath('.//w:t|.//w:br|.//w:tab|.//w:cr').map { |n| n.name == 't' ? n.text : "<#{n.name}>" }
+      end
+
+      it 'replaces the text from the first through the last w:t, dropping the breaks and tabs between them' do
+        node = w_node('<w:r><w:rPr><w:b/></w:rPr><w:t>a</w:t><w:br/><w:t>b</w:t><w:tab/><w:t>c</w:t></w:r>')
+        text_run = described_class.new(node)
+
+        text_run.text = 'new'
+
+        expect(text_run.text).to eq('new')
+        expect(layout(node)).to eq(['new'])
+        expect(text_run).to be_bolded
+      end
+
+      it 'keeps breaks outside the text, such as a trailing page break' do
+        node = w_node('<w:r><w:br/><w:t>a</w:t><w:cr/><w:t>b</w:t><w:br w:type="page"/></w:r>')
+        text_run = described_class.new(node)
+
+        text_run.text = 'new'
+
+        expect(layout(node)).to eq(['<br>', 'new', '<br>'])
+        expect(node.at_xpath('w:br[@w:type="page"]')).not_to be_nil
+      end
+
+      it 'replaces the text of a hyperlink made of several runs' do
+        node = w_node('<w:hyperlink r:id="rId1"><w:r><w:t>site </w:t></w:r><w:r><w:t>link</w:t></w:r></w:hyperlink>')
+        text_run = described_class.new(node)
+
+        text_run.text = 'new'
+
+        expect(text_run.text).to eq('new')
+        expect(layout(node)).to eq(['new'])
+      end
+    end
   end
 
   describe '#substitute' do
