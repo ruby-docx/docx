@@ -40,6 +40,7 @@ module Docx
       document = @zip.glob('word/document*.xml').first
       raise Errno::ENOENT if document.nil?
 
+      @document_path = document.name
       @document_xml = document.get_input_stream.read
       @doc = Nokogiri::XML(@document_xml)
       load_styles
@@ -261,7 +262,7 @@ module Docx
     # end of methods that make edits?
     #++
     def update
-      replace_entry 'word/document.xml', doc.serialize(save_with: 0)
+      replace_entry @document_path, doc.serialize(save_with: 0)
       replace_entry 'word/styles.xml', styles_configuration.serialize(save_with: 0)
       headers.each do |name, content|
         replace_entry "word/#{name}.xml", content.serialize(save_with: 0)

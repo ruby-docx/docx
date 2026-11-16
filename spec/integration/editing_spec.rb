@@ -107,6 +107,18 @@ describe 'Editing a document' do
     end
   end
 
+  # Word for the web names the main part word/document2.xml.
+  describe 'office365.docx' do
+    it 'persists edits to a main part not named document.xml' do
+      doc = Docx::Document.open(fixture_path('office365.docx'))
+
+      doc.paragraphs.first.text = 'edited'
+      doc.save(tmp_path('saved.docx'))
+
+      expect(Docx::Document.open(tmp_path('saved.docx')).paragraphs.first.text).to eq('edited')
+    end
+  end
+
   describe 'multi_doc_bookmarks.docx' do
     it 'edits bookmarks in headers and footers and persists them' do
       doc = Docx::Document.open(fixture_path('multi_doc_bookmarks.docx'))
