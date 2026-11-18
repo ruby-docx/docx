@@ -1,3 +1,4 @@
+require 'cgi'
 require 'nokogiri'
 require 'docx/elements'
 require 'docx/containers'
@@ -87,7 +88,7 @@ module Docx
         
         unless attributes.nil? || attributes.empty?
           attributes.each do |attr_name, attr_value|
-            html << " #{attr_name}=\"#{attr_value}\""
+            html << " #{attr_name}=\"#{CGI.escapeHTML(attr_value.to_s)}\""
           end
         end
         

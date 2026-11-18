@@ -228,6 +228,13 @@ describe Docx::Document do
     it 'handles internal (anchor) links' do
       expect { described_class.open(fixture_path('internal-links.docx')).to_html }.not_to raise_error
     end
+
+    it 'escapes the document text' do
+      doc = described_class.open(fixture_path('basic.docx'))
+      doc.paragraphs.first.text = 'a <img src=x onerror=alert(1)> & c'
+
+      expect(doc.paragraphs.first.to_html).to include('a &lt;img src=x onerror=alert(1)&gt; &amp; c')
+    end
   end
 
   describe '#to_xml' do
