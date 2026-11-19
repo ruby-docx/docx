@@ -105,7 +105,7 @@ module Docx
 
         # Return text as a HTML fragment with formatting based on properties.
         def to_html
-          html = @text
+          html = CGI.escapeHTML(@text.to_s)
           html = html_tag(:em, content: html) if italicized?
           html = html_tag(:strong, content: html) if bolded?
           html = html_tag(:s, content: html) if striked?
